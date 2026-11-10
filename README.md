@@ -1,11 +1,14 @@
 <div align="center">
 
-# freecad-codemode-mcp
+# robust-freecad-mcp
 
-**Describe a part. Get a FreeCAD model that has been *checked*.**
+**Describe a part. Get a FreeCAD model that is *measured*, *tested* and *seen*.**
 
-An MCP server where AI agents write CAD in **Code Mode**. Every dimension, hole and gram is measured,
-the parametric model is stress-tested, and the agent **sees** a render of what it built.
+An MCP server where AI agents build FreeCAD parts in **⚡ Code Mode**, which makes it ***efficient***. One short
+JavaScript program drives a typed `cad` API, so a whole build → validate → repair loop is a single call at
+**~15× fewer tokens**. The results are **🛡️ robust**: ***measured and tested***. Every dimension, hole and gram is
+**measured** from the exported STEP in a separate sandboxed process, and the parametric model is **stress-tested**
+with flex tests. Untrusted CAD code runs in a **kernel sandbox**, and the agent **sees** a render of what it built.
 
 ![FreeCAD 1.1.3](https://img.shields.io/badge/FreeCAD-1.1.3-blue)
 ![MCP](https://img.shields.io/badge/MCP-stdio-6f42c1)
@@ -214,7 +217,7 @@ return catalog.entries.filter(e => e.kind === "pitfall").map(e => [e.id, e.summa
 ## Quick start
 
 ```bash
-git clone … && cd freecad-codemode-mcp
+git clone https://github.com/YunchaoYang/robust-freecad-mcp.git && cd robust-freecad-mcp
 ./scripts/setup-env.sh                      # micromamba env: FreeCAD 1.1.3 + Node 22, npm ci, build (no root)
 
 claude mcp add freecad-codemode \
