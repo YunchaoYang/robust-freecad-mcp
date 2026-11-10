@@ -1,0 +1,16 @@
+# UNTESTED (see infra/docker/Dockerfile). stdio MCP: run with `docker compose run --rm -T mcp`.
+services:
+  mcp:
+    build: { context: .., dockerfile: infra/docker/Dockerfile }
+    stdin_open: true
+    read_only: true
+    network_mode: none
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    pids_limit: 256
+    mem_limit: 6g
+    cpus: 2
+    tmpfs: ["/tmp"]
+    volumes: ["cad-data:/data"]
+volumes:
+  cad-data: {}

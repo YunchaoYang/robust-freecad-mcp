@@ -1,0 +1,22 @@
+{
+  "asOf": "2026-11-06",
+  "source": "READMEs, docs and tool-registration source of each project (statically read, not executed); 'partial' = limited form, e.g. GUI-only or test-only; 'no' = not found in docs/source.",
+  "servers": ["this server", "neka-nat/freecad-mcp", "spkane/freecad-robust-mcp", "blwfish/freecad-mcp", "dcc-mcp/dcc-mcp-freecad", "theosib/FreeCAD-MCP-Server", "pzfreo/build123d-mcp", "RobertCoop/openscad-mcp"],
+  "kernels": ["FreeCAD", "FreeCAD", "FreeCAD", "FreeCAD", "FreeCAD", "FreeCAD", "build123d", "OpenSCAD"],
+  "features": [
+    {"name": "Code Mode (agent JS runs sandboxed against a typed API)", "values": ["yes", "no", "no", "no", "no", "no", "no", "no"]},
+    {"name": "OS-level sandbox for executed code", "values": ["yes", "no", "no", "no", "no", "no", "partial", "no"],
+     "note": "build123d-mcp: in-process AST allowlist + restricted builtins, not OS-level"},
+    {"name": "Validation in a process that never runs user code", "values": ["yes", "no", "no", "partial", "yes", "no", "yes", "partial"]},
+    {"name": "Design-intent checks (bbox, volume, hole positions)", "values": ["yes", "no", "no", "yes", "partial", "partial", "yes", "yes"]},
+    {"name": "Parametric flex test of the saved model", "values": ["yes", "no", "no", "partial", "partial", "no", "partial", "partial"],
+     "note": "others: regression/sweep/edit re-checks; ours re-opens the exported FCStd, edits spreadsheet params, recomputes, re-validates"},
+    {"name": "Sketch DoF / fully-constrained check", "values": ["yes", "no", "no", "no", "yes", "yes", "n/a", "n/a"]},
+    {"name": "Mass & material properties", "values": ["yes", "no", "no", "partial", "no", "no", "yes", "yes"]},
+    {"name": "Rendered preview returned to the model", "values": ["yes", "partial", "partial", "partial", "yes", "partial", "yes", "yes"],
+     "note": "partial = needs the FreeCAD GUI running"},
+    {"name": "Runs fully headless (no FreeCAD GUI)", "values": ["yes", "partial", "yes", "partial", "yes", "no", "yes", "yes"]},
+    {"name": "NL->CAD benchmark with hidden specs", "values": ["yes", "no", "no", "no", "no", "no", "yes", "partial"],
+     "note": "build123d-mcp via companion CADGenBench repo; openscad-mcp ships a 15-task harness"}
+  ]
+}

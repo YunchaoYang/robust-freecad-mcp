@@ -1,0 +1,988 @@
+{
+  "version": "2026.11.06b",
+  "freecadVersion": "1.1.3",
+  "kinds": {
+    "contract": "How a job script must be written and what the worker checks",
+    "example": "Complete, tested job script (see `example` file); start from these",
+    "api": "Curated FreeCAD API reference entry",
+    "pitfall": "Known limitation or common mistake with the fix"
+  },
+  "entries": [
+    {
+      "id": "contract.script",
+      "kind": "contract",
+      "title": "Job script contract (doc + result_obj)",
+      "module": "contract",
+      "tags": [
+        "contract",
+        "script",
+        "doc",
+        "result_obj",
+        "params",
+        "required"
+      ],
+      "freecadVersions": [
+        "1.1"
+      ],
+      "summary": "FreeCAD Python runs headless in a sandbox. Pre-bound globals: App/FreeCAD, Part, Sketcher, params (dict from request.parameters), cadkit (tested helper library - prefer it). The script MUST define `doc` (App.newDocument(...)) and `result_obj` (final document object whose .Shape is the part, e.g. a PartDesign::Body; a bare Part.Shape is wrapped into a Part::Feature 'Result'). The runner recomputes doc, reports features in error, exports, then re-imports the files in a fresh process to validate.",
+      "signature": "globals: App, FreeCAD, Part, Sketcher, params: dict[str, float|str|bool]  ->  must set doc, result_obj",
+      "limitations": [
+        "No FreeCADGui: no views, screenshots, selection or Gui.* calls.",
+        "No network, no subprocess/fork, no files outside the job directory; import only modules shipped with FreeCAD/Python.",
+        "Do not call doc.saveAs/exportStep yourself; the runner exports to deterministic names (model.FCStd/.step/.stl).",
+        "Write geometry in millimetres; FreeCAD's internal unit is mm."
+      ]
+    },
+    {
+      "id": "contract.validation",
+      "kind": "contract",
+      "title": "Validation spec (request.validation)",
+      "module": "contract",
+      "tags": [
+        "validation",
+        "bounding box",
+        "volume",
+        "holes",
+        "parametric",
+        "checks",
+        "tolerance",
+        "mass",
+        "material",
+        "weight",
+        "dof",
+        "fully constrained",
+        "flex",
+        "robustness",
+        "preview",
+        "png",
+        "render"
+      ],
+      "freecadVersions": [
+        "1.1"
+      ],
+      "summary": "Checks run against the re-imported STEP (FCStd if no STEP). Fields: requireValidShape (default true), requireSolid (true), expectedBoundingBoxMm [x,y,z] extents, toleranceMm (0.01), expectedVolumeMm3 + volumeTolerancePct (0.5), expectedSolidCount, holes[{diameterMm, centersMm[[a,b]], axis 'z', reference 'bboxMin'|'origin', through true}], expectedHoleCount, requireParametric (FCStd must contain constrained sketches/expressions, not a baked shape), reportHoles. Each check returns {name, passed, expected, actual, message}. Engineering: material (aluminum_6061|steel|stainless_304|brass|copper|titanium|abs|pla|petg|nylon|polycarbonate|acetal) -> massProperties {massG, centerOfMassMm}; maxMassG; requireFullyConstrained (every sketch DoF 0); flexTests[{name?, set:{alias: value}, expect?:{boundingBoxMm, volumeMm3, holeCount}}] re-open the saved FCStd, change Params spreadsheet aliases, recompute and re-check (needs FCStd output). Add 'PNG' to outputs for a rendered 4-view preview with dimensions.",
+      "signature": "validation: { requireValidShape?, requireSolid?, expectedBoundingBoxMm?, toleranceMm?, expectedVolumeMm3?, volumeTolerancePct?, expectedSolidCount?, holes?, expectedHoleCount?, requireParametric?, reportHoles? }",
+      "limitations": [
+        "A passing validation proves geometry facts, not that the design meets every user requirement; encode every stated dimension as a check.",
+        "Hole detection finds cylindrical, concave faces parallel to the given axis; countersinks/threads are not modelled.",
+        "Hole centres default to coordinates from the bounding-box minimum corner (reference 'bboxMin')."
+      ]
+    },
+    {
+      "id": "contract.errors",
+      "kind": "contract",
+      "title": "Job error codes and how to repair",
+      "module": "contract",
+      "tags": [
+        "errors",
+        "repair",
+        "traceback",
+        "featureErrors",
+        "debug"
+      ],
+      "freecadVersions": [
+        "1.1"
+      ],
+      "summary": "SCRIPT_SYNTAX_ERROR (fix line), SCRIPT_ERROR (traceback with job-script frames only), SCRIPT_CONTRACT (define doc/result_obj), RECOMPUTE_ERROR (featureErrors lists the failing feature + FreeCAD status message, e.g. sketch conflicting constraints with their indices), EXPORT_FAILED, VALIDATION_FAILED (compare checks[].expected vs actual), TIMEOUT, WORKER_CRASHED (OCCT fault: simplify booleans/fillets), SANDBOX_UNAVAILABLE (server problem).",
+      "limitations": [
+        "Sketcher conflict messages number constraints from 1 in the GUI convention; addConstraint returns 0-based indices."
+      ]
+    },
+    {
+      "id": "example.partdesign.mounting_plate",
+      "kind": "example",
+      "title": "Parametric mounting plate with 4 through holes (PartDesign + Spreadsheet)",
+      "module": "PartDesign",
+      "tags": [
+        "plate",
+        "mounting",
+        "bracket",
+        "holes",
+        "clearance",
+        "M6",
+        "pad",
+        "pocket",
+        "through all",
+        "spreadsheet",
+        "expressions",
+        "parametric",
+        "rectangle",
+        "sketch"
+      ],
+      "freecadVersions": [
+        "1.0",
+        "1.1"
+      ],
+      "summary": "120x80x10 plate, four 6.6 mm (M6 clearance) holes 12 mm from edges. Spreadsheet aliases drive named sketch constraints and the pad length, so the FCStd stays editable. Parameters: length, width, thickness, holeDiameter, edgeOffset.",
+      "example": "partdesign_mounting_plate.py",
+      "parameters": {
+        "length": 120,
+        "width": 80,
+        "thickness": 10,
+        "holeDiameter": 6.6,
+        "edgeOffset": 12
+      },
+      "validationExample": {
+        "expectedBoundingBoxMm": [
+          120,
+          80,
+          10
+        ],
+        "requireParametric": true,
+        "holes": [
+          {
+            "diameterMm": 6.6,
+            "centersMm": [
+              [
+                12,
+                12
+              ],
+              [
+                108,
+                12
+              ],
+              [
+                12,
+                68
+              ],
+              [
+                108,
+                68
+              ]
+            ]
+          }
+        ],
+        "expectedHoleCount": 4
+      },
+      "limitations": [
+        "Clearance diameters (ISO 273 medium): M3 3.4, M4 4.5, M5 5.5, M6 6.6, M8 9.0, M10 11.0, M12 13.5."
+      ]
+    },
+    {
+      "id": "example.partdesign.polar_pattern_flange",
+      "kind": "example",
+      "title": "Round flange with bolt-circle holes (PolarPattern)",
+      "module": "PartDesign",
+      "tags": [
+        "flange",
+        "bolt circle",
+        "pcd",
+        "polar pattern",
+        "circular pattern",
+        "annulus",
+        "bore",
+        "disc",
+        "pocket",
+        "pattern"
+      ],
+      "freecadVersions": [
+        "1.0",
+        "1.1"
+      ],
+      "summary": "Pad of two concentric circles (inner circle becomes the bore), one bolt-hole pocket on the pitch circle, then PartDesign::PolarPattern about the body's Z axis. Parameters: outerDiameter, thickness, boreDiameter, pcd, holeDiameter, holes.",
+      "example": "partdesign_polar_pattern_flange.py",
+      "parameters": {
+        "outerDiameter": 100,
+        "thickness": 8,
+        "boreDiameter": 30,
+        "pcd": 75,
+        "holeDiameter": 9,
+        "holes": 6
+      },
+      "limitations": [
+        "Set body.Tip to the pattern so the Body shape includes it."
+      ]
+    },
+    {
+      "id": "example.partdesign.revolution_shaft",
+      "kind": "example",
+      "title": "Stepped shaft by Revolution + end Chamfer",
+      "module": "PartDesign",
+      "tags": [
+        "shaft",
+        "revolve",
+        "revolution",
+        "turned",
+        "lathe",
+        "axisymmetric",
+        "chamfer",
+        "cylinder",
+        "step"
+      ],
+      "freecadVersions": [
+        "1.0",
+        "1.1"
+      ],
+      "summary": "Closed half-profile sketched on the XZ plane, revolved 360 degrees about the sketch H_Axis, then a PartDesign::Chamfer on the circular edge selected by geometry. Parameters: d1, l1, d2, l2, chamfer.",
+      "example": "partdesign_revolution_shaft.py",
+      "parameters": {
+        "d1": 20,
+        "l1": 30,
+        "d2": 12,
+        "l2": 40,
+        "chamfer": 1
+      },
+      "limitations": [
+        "The profile must not cross the revolution axis."
+      ]
+    },
+    {
+      "id": "example.partdesign.fillet_bracket",
+      "kind": "example",
+      "title": "L-bracket with inner-corner Fillet (edge picked by geometry)",
+      "module": "PartDesign",
+      "tags": [
+        "bracket",
+        "angle",
+        "L",
+        "fillet",
+        "round",
+        "edge selection",
+        "pad",
+        "reversed",
+        "xz plane"
+      ],
+      "freecadVersions": [
+        "1.0",
+        "1.1"
+      ],
+      "summary": "L profile on XZ plane padded along +Y (Reversed=True), then PartDesign::Fillet on the edge found by its bounding box rather than a hard-coded EdgeN. Parameters: leg, thickness, width, filletRadius.",
+      "example": "partdesign_fillet_bracket.py",
+      "parameters": {
+        "leg": 40,
+        "thickness": 5,
+        "width": 30,
+        "filletRadius": 4
+      }
+    },
+    {
+      "id": "example.part.primitives_boolean",
+      "kind": "example",
+      "title": "Part primitives + boolean Cut (parametric document objects)",
+      "module": "Part",
+      "tags": [
+        "box",
+        "cylinder",
+        "cut",
+        "boolean",
+        "bore",
+        "block",
+        "primitive",
+        "expressions",
+        "Part::Cut"
+      ],
+      "freecadVersions": [
+        "0.21",
+        "1.0",
+        "1.1"
+      ],
+      "summary": "Part::Box minus Part::Cylinder via Part::Cut; expressions keep the bore centred. Tool overshoots both faces to avoid coplanar booleans. Parameters: length, width, height, boreDiameter.",
+      "example": "part_primitives_boolean.py",
+      "parameters": {
+        "length": 60,
+        "width": 40,
+        "height": 20,
+        "boreDiameter": 16
+      }
+    },
+    {
+      "id": "example.part.shape_api",
+      "kind": "example",
+      "title": "Direct Part shape API: makeBox, makeFillet, cut, removeSplitter",
+      "module": "Part",
+      "tags": [
+        "shape",
+        "makeBox",
+        "fillet",
+        "cut",
+        "slot",
+        "removeSplitter",
+        "non-parametric",
+        "quick"
+      ],
+      "freecadVersions": [
+        "0.21",
+        "1.0",
+        "1.1"
+      ],
+      "summary": "Fast scripted geometry with Part.make* and TopoShape methods; result_obj may be a bare Part.Shape. Produces a baked (non-editable) FCStd.",
+      "example": "part_shape_api.py",
+      "limitations": [
+        "Fails validation.requireParametric by design; use PartDesign or Part document objects when editability matters."
+      ]
+    },
+    {
+      "id": "api.part.make",
+      "kind": "api",
+      "title": "Part.make* primitive constructors",
+      "module": "Part",
+      "tags": [
+        "makeBox",
+        "makeCylinder",
+        "makeSphere",
+        "makeCone",
+        "makeTorus",
+        "makePolygon",
+        "makeCircle",
+        "primitive",
+        "shape"
+      ],
+      "freecadVersions": [
+        "0.21",
+        "1.0",
+        "1.1"
+      ],
+      "summary": "Return Part.Shape (TopoShape), not document objects.",
+      "signature": "Part.makeBox(l, w, h, pnt=Vector(), dir=Vector(0,0,1)); Part.makeCylinder(r, h, pnt=Vector(), dir=Vector(0,0,1), angle=360); Part.makeSphere(r, pnt=Vector()); Part.makeCone(r1, r2, h, pnt, dir); Part.makeTorus(r1, r2, pnt, dir); Part.makePolygon([Vector,...], closed=False); Part.makeCircle(r, center, normal)"
+    },
+    {
+      "id": "api.part.shape_ops",
+      "kind": "api",
+      "title": "TopoShape booleans, fillets, extrude, transforms",
+      "module": "Part",
+      "tags": [
+        "fuse",
+        "cut",
+        "common",
+        "makeFillet",
+        "makeChamfer",
+        "extrude",
+        "revolve",
+        "translate",
+        "rotate",
+        "mirror",
+        "removeSplitter",
+        "refine"
+      ],
+      "freecadVersions": [
+        "0.21",
+        "1.0",
+        "1.1"
+      ],
+      "summary": "Methods on Part.Shape; most return new shapes (translate/rotate mutate in place; use .copy() first or .translated()).",
+      "signature": "s.fuse(other|[others]); s.cut(tool); s.common(tool); s.makeFillet(radius, edges); s.makeChamfer(size, edges); face.extrude(Vector); s.revolve(base, axis, angle); s.translated(Vector); s.rotated(center, axis, deg); s.mirror(base, normal); s.removeSplitter(); Part.Face(Part.Wire(edges)); Part.Wire(edges).isClosed()",
+      "limitations": [
+        "Booleans with coplanar/tangent faces are fragile: overshoot tools by >=1 mm.",
+        "Call removeSplitter() after fuses to merge coplanar faces."
+      ]
+    },
+    {
+      "id": "api.part.objects",
+      "kind": "api",
+      "title": "Part workbench document objects (parametric)",
+      "module": "Part",
+      "tags": [
+        "Part::Box",
+        "Part::Cylinder",
+        "Part::Cut",
+        "Part::Fuse",
+        "Part::MultiFuse",
+        "Part::Common",
+        "Part::Extrusion",
+        "Part::Revolution",
+        "Part::Fillet",
+        "Part::Mirroring",
+        "addObject"
+      ],
+      "freecadVersions": [
+        "0.21",
+        "1.0",
+        "1.1"
+      ],
+      "summary": "doc.addObject('Part::Box','Name') etc. Booleans: obj.Base/obj.Tool (Cut), obj.Shapes=[...] (MultiFuse/MultiCommon). Extrusion: ext.Base=sketch; ext.Dir=Vector; ext.LengthFwd; ext.Solid=True. Revolution: rev.Source=sketch; rev.Axis; rev.Base; rev.Angle; rev.Solid=True.",
+      "signature": "box.Length/Width/Height; cyl.Radius/Height/Angle; obj.Placement = App.Placement(App.Vector(x,y,z), App.Rotation(App.Vector(0,0,1), deg))"
+    },
+    {
+      "id": "api.sketcher.geometry",
+      "kind": "api",
+      "title": "Sketch geometry: addGeometry with Part.LineSegment / Circle / ArcOfCircle",
+      "module": "Sketcher",
+      "tags": [
+        "sketch",
+        "addGeometry",
+        "LineSegment",
+        "Circle",
+        "ArcOfCircle",
+        "construction",
+        "profile",
+        "rectangle",
+        "slot"
+      ],
+      "freecadVersions": [
+        "0.21",
+        "1.0",
+        "1.1"
+      ],
+      "summary": "sk.addGeometry(geo, construction=False) returns the 0-based geometry index. Points of a geometry: 1=start, 2=end, 3=centre. Special ids: -1 = H_Axis (point 1 = origin), -2 = V_Axis. Sketch coordinates are local 2D (z=0).",
+      "signature": "sk.addGeometry(Part.LineSegment(App.Vector(x0,y0,0), App.Vector(x1,y1,0)), False); sk.addGeometry(Part.Circle(App.Vector(cx,cy,0), App.Vector(0,0,1), r), False); sk.addGeometry(Part.ArcOfCircle(Part.Circle(c, App.Vector(0,0,1), r), a0_rad, a1_rad), False)",
+      "limitations": [
+        "Profiles must be closed and non-self-intersecting to Pad/Pocket; nested closed wires make holes."
+      ]
+    },
+    {
+      "id": "api.sketcher.constraints",
+      "kind": "api",
+      "title": "Sketcher.Constraint types, named constraints and expressions",
+      "module": "Sketcher",
+      "tags": [
+        "constraint",
+        "Coincident",
+        "Horizontal",
+        "Vertical",
+        "DistanceX",
+        "DistanceY",
+        "Distance",
+        "Radius",
+        "Diameter",
+        "Equal",
+        "Parallel",
+        "Perpendicular",
+        "Tangent",
+        "PointOnObject",
+        "Symmetric",
+        "Angle",
+        "renameConstraint",
+        "setExpression",
+        "fully constrained"
+      ],
+      "freecadVersions": [
+        "0.21",
+        "1.0",
+        "1.1"
+      ],
+      "summary": "Constraint('Coincident', g1, p1, g2, p2); ('Horizontal'|'Vertical', g); ('DistanceX'|'DistanceY', g1, p1, g2, p2, value) (signed: p2 - p1); ('Distance', g, value); ('Radius'|'Diameter', g, value); ('Equal', g1, g2); ('PointOnObject', g, p, g_target); ('Tangent', g1, g2); ('Symmetric', g1, p1, g2, p2, g_line); ('Angle', g, rad). addConstraint returns a 0-based index (or list). Name it with sk.renameConstraint(i, 'Width') and drive it with sk.setExpression('.Constraints.Width', 'Params.width').",
+      "limitations": [
+        "Do not add a DistanceX/Y between endpoints of a line already constrained Vertical/Horizontal (zero distance -> conflict).",
+        "Redundant/conflicting constraints mark the sketch Invalid; the error message lists offending constraints."
+      ]
+    },
+    {
+      "id": "api.sketcher.attachment",
+      "kind": "api",
+      "title": "Attaching sketches to planes/faces (AttachmentSupport, MapMode)",
+      "module": "Sketcher",
+      "tags": [
+        "attach",
+        "AttachmentSupport",
+        "Support",
+        "MapMode",
+        "FlatFace",
+        "XY_Plane",
+        "XZ_Plane",
+        "YZ_Plane",
+        "origin",
+        "AttachmentOffset"
+      ],
+      "freecadVersions": [
+        "1.0",
+        "1.1"
+      ],
+      "summary": "In a Body: plane = next(f for f in body.Origin.OriginFeatures if f.Role == 'XY_Plane'); sk.AttachmentSupport = [(plane, '')]; sk.MapMode = 'FlatFace'. Offset with sk.AttachmentOffset = App.Placement(App.Vector(0,0,z), App.Rotation()). On a feature face: [(pad, 'Face6')] (fragile; prefer origin planes + offsets).",
+      "limitations": [
+        "FreeCAD 0.21 used `Support`; 1.x renamed it to `AttachmentSupport`.",
+        "Origin feature names are not stable across versions; select by .Role, not by name.",
+        "XZ_Plane normal is -Y: pads go toward -Y unless Reversed=True."
+      ]
+    },
+    {
+      "id": "api.partdesign.body",
+      "kind": "api",
+      "title": "PartDesign::Body and feature creation",
+      "module": "PartDesign",
+      "tags": [
+        "Body",
+        "newObject",
+        "Tip",
+        "feature",
+        "single solid",
+        "partdesign"
+      ],
+      "freecadVersions": [
+        "1.0",
+        "1.1"
+      ],
+      "summary": "body = doc.addObject('PartDesign::Body','Body'); create features with body.newObject(type, name) so they join the body and become the Tip. body.Shape is the Tip's shape. Use result_obj = body.",
+      "signature": "body.newObject('Sketcher::SketchObject'|'PartDesign::Pad'|'PartDesign::Pocket'|'PartDesign::Revolution'|'PartDesign::Groove'|'PartDesign::Hole'|'PartDesign::Fillet'|'PartDesign::Chamfer'|'PartDesign::LinearPattern'|'PartDesign::PolarPattern'|'PartDesign::Mirrored', name)",
+      "limitations": [
+        "A Body must stay a single contiguous solid; disjoint pads fail.",
+        "Features added with doc.addObject (not body.newObject) are not in the body."
+      ]
+    },
+    {
+      "id": "api.partdesign.pad_pocket",
+      "kind": "api",
+      "title": "PartDesign Pad and Pocket",
+      "module": "PartDesign",
+      "tags": [
+        "Pad",
+        "Pocket",
+        "extrude",
+        "cut",
+        "Length",
+        "Type",
+        "ThroughAll",
+        "UpToFace",
+        "TwoLengths",
+        "Midplane",
+        "Reversed",
+        "through hole"
+      ],
+      "freecadVersions": [
+        "1.0",
+        "1.1"
+      ],
+      "summary": "pad.Profile = sketch; pad.Length = mm; pad.Type = 'Length'|'TwoLengths'|'UpToLast'|'UpToFirst'|'UpToFace'; pad.Midplane; pad.Reversed. Pocket: same plus Type 'ThroughAll'. For a through hole from a sketch on the XY plane use Type='ThroughAll' with Midplane=True.",
+      "limitations": [
+        "A Pocket cuts opposite to the sketch normal; with a sketch on the bottom face it removes nothing unless Reversed/Midplane."
+      ]
+    },
+    {
+      "id": "api.partdesign.revolution",
+      "kind": "api",
+      "title": "PartDesign Revolution / Groove",
+      "module": "PartDesign",
+      "tags": [
+        "Revolution",
+        "Groove",
+        "revolve",
+        "ReferenceAxis",
+        "H_Axis",
+        "V_Axis",
+        "Angle",
+        "lathe"
+      ],
+      "freecadVersions": [
+        "1.0",
+        "1.1"
+      ],
+      "summary": "rev.Profile = sketch; rev.ReferenceAxis = (sketch, ['H_Axis'|'V_Axis']) or (origin_axis, ['']); rev.Angle = 360. Groove removes material the same way."
+    },
+    {
+      "id": "api.partdesign.dressup",
+      "kind": "api",
+      "title": "PartDesign Fillet / Chamfer / Draft / Thickness (dress-up features)",
+      "module": "PartDesign",
+      "tags": [
+        "Fillet",
+        "Chamfer",
+        "Thickness",
+        "shell",
+        "Draft",
+        "Base",
+        "edges",
+        "round",
+        "bevel"
+      ],
+      "freecadVersions": [
+        "1.0",
+        "1.1"
+      ],
+      "summary": "fil.Base = (feature, ['Edge3', 'Edge7']); fil.Radius = r. ch.Base = (feature, [...]); ch.Size = s. Thickness: th.Base = (feature, ['Face6']); th.Value; th.Mode. Choose edges by geometry: [f'Edge{i+1}' for i,e in enumerate(feature.Shape.Edges) if <test on e.BoundBox / e.Curve>].",
+      "limitations": [
+        "Edge/face numbers change when upstream features change (topological naming); select by geometry in-script.",
+        "A fillet radius >= adjacent face width makes OCCT fail (RECOMPUTE_ERROR)."
+      ]
+    },
+    {
+      "id": "api.partdesign.patterns",
+      "kind": "api",
+      "title": "PartDesign LinearPattern / PolarPattern / Mirrored",
+      "module": "PartDesign",
+      "tags": [
+        "LinearPattern",
+        "PolarPattern",
+        "Mirrored",
+        "MultiTransform",
+        "array",
+        "Originals",
+        "Occurrences",
+        "Direction",
+        "Axis",
+        "pattern"
+      ],
+      "freecadVersions": [
+        "1.0",
+        "1.1"
+      ],
+      "summary": "pat.Originals = [feature]; Linear: pat.Direction = (sketch, ['H_Axis']) or (origin_axis, ['']); pat.Length = total span; pat.Occurrences = n. Polar: pat.Axis = (z_axis, ['']); pat.Angle = 360; pat.Occurrences = n. Mirrored: pat.MirrorPlane = (plane, ['']). Set body.Tip = pat if needed.",
+      "limitations": [
+        "Origin axes: next(f for f in body.Origin.OriginFeatures if f.Role == 'Z_Axis')."
+      ]
+    },
+    {
+      "id": "api.spreadsheet.parameters",
+      "kind": "api",
+      "title": "Spreadsheet-driven parameters and expressions",
+      "module": "Spreadsheet",
+      "tags": [
+        "Spreadsheet",
+        "alias",
+        "setAlias",
+        "expression",
+        "setExpression",
+        "parameter",
+        "parametric",
+        "editable",
+        "variables"
+      ],
+      "freecadVersions": [
+        "0.21",
+        "1.0",
+        "1.1"
+      ],
+      "summary": "sheet = doc.addObject('Spreadsheet::Sheet','Params'); sheet.set('B1','120 mm'); sheet.setAlias('B1','length'); doc.recompute(). Then obj.setExpression('Length','Params.length') or sketch.setExpression('.Constraints.Width','Params.width'). Expressions may use arithmetic: 'Params.length - Params.edgeOffset'.",
+      "limitations": [
+        "Recompute the sheet before reading aliases.",
+        "Aliases must be valid identifiers and not look like cell names (e.g. 'L1' is invalid)."
+      ]
+    },
+    {
+      "id": "api.document.recompute",
+      "kind": "api",
+      "title": "Document, recompute and feature status",
+      "module": "App",
+      "tags": [
+        "newDocument",
+        "recompute",
+        "isValid",
+        "State",
+        "getStatusString",
+        "Placement",
+        "Vector",
+        "Rotation"
+      ],
+      "freecadVersions": [
+        "0.21",
+        "1.0",
+        "1.1"
+      ],
+      "summary": "doc = App.newDocument('Name'); doc.recompute(); a feature in error has 'Invalid' in obj.State and obj.getStatusString() explains why. App.Vector(x,y,z); App.Rotation(axis, degrees); App.Placement(base, rotation).",
+      "limitations": [
+        "Reading feature.Shape before doc.recompute() returns stale or null geometry."
+      ]
+    },
+    {
+      "id": "pitfall.topological_naming",
+      "kind": "pitfall",
+      "title": "Hard-coded Edge/Face numbers break (topological naming)",
+      "module": "PartDesign",
+      "tags": [
+        "topological naming",
+        "Edge",
+        "Face",
+        "fillet",
+        "attach",
+        "selection",
+        "fragile"
+      ],
+      "freecadVersions": [
+        "1.0",
+        "1.1"
+      ],
+      "summary": "Never hard-code 'Edge12'. Recompute, then select sub-elements by geometry (BoundBox, Curve type, centre, normal) and pass the computed names. Prefer attaching sketches to origin planes with AttachmentOffset over attaching to faces."
+    },
+    {
+      "id": "pitfall.coplanar_booleans",
+      "kind": "pitfall",
+      "title": "Coplanar / tangent boolean faces produce invalid shapes",
+      "module": "Part",
+      "tags": [
+        "boolean",
+        "coplanar",
+        "invalid",
+        "isValid",
+        "overshoot",
+        "cut",
+        "fuse"
+      ],
+      "freecadVersions": [
+        "0.21",
+        "1.0",
+        "1.1"
+      ],
+      "summary": "Make cutting tools overshoot the target by >=1 mm on faces that would otherwise coincide; fuse overlapping (not just touching) solids; call removeSplitter()/Refine=True afterwards. Check validation shape.isValid."
+    },
+    {
+      "id": "pitfall.headless",
+      "kind": "pitfall",
+      "title": "Headless execution: no GUI, view providers or screenshots",
+      "module": "App",
+      "tags": [
+        "headless",
+        "Gui",
+        "FreeCADGui",
+        "ViewObject",
+        "screenshot",
+        "view",
+        "color",
+        "Visibility"
+      ],
+      "freecadVersions": [
+        "0.21",
+        "1.0",
+        "1.1"
+      ],
+      "summary": "Jobs run without FreeCADGui: obj.ViewObject is None, Gui.* is unavailable. Setting obj.Visibility is fine. Ask for numbers (geometry, checks, detected holes) instead of pictures."
+    },
+    {
+      "id": "pitfall.version_api",
+      "kind": "pitfall",
+      "title": "FreeCAD 0.21 vs 1.x API differences",
+      "module": "App",
+      "tags": [
+        "version",
+        "0.21",
+        "1.0",
+        "1.1",
+        "Support",
+        "AttachmentSupport",
+        "migration",
+        "deprecated"
+      ],
+      "freecadVersions": [
+        "1.0",
+        "1.1"
+      ],
+      "summary": "Runtime is FreeCAD 1.1.3. Sketch/feature `Support` -> `AttachmentSupport` (1.0). Origin features: select by .Role ('XY_Plane', 'Z_Axis'), names carry suffixes. Toponaming mitigation in 1.0 does not make hard-coded EdgeN safe in scripts."
+    },
+    {
+      "id": "api.cadkit.model",
+      "kind": "api",
+      "title": "cadkit.Model - parametric PartDesign in a few lines (preferred)",
+      "module": "cadkit",
+      "tags": [
+        "cadkit",
+        "helper",
+        "Model",
+        "params",
+        "spreadsheet",
+        "pad",
+        "pocket",
+        "revolve",
+        "fillet",
+        "chamfer",
+        "pattern",
+        "mirror",
+        "finish",
+        "quick",
+        "short"
+      ],
+      "freecadVersions": [
+        "1.1"
+      ],
+      "summary": "m = cadkit.Model(name, unitless=(), **params) creates doc + Params spreadsheet (aliases) + PartDesign Body; request.parameters override defaults. Values everywhere are numbers (mm) or expression strings over parameter names ('length - edge', 'hole/2'); expressions become FreeCAD expressions so the FCStd stays editable (bare numbers in +/- get mm). m.sketch(name, plane='XY'|'XZ'|'YZ', offset=0) -> Sketch; m.pad(s, length, reversed=False, symmetric=False); m.pocket(s, depth='through'|value); m.revolve(s, angle=360, axis='H'|'V', groove=False); m.fillet(select, r) / m.chamfer(select, size) where select is ['EdgeN'] or callable(shape)->names; m.polar_pattern(feature, count, angle=360, axis='Z'); m.linear_pattern(feature, length, count, direction='X'); m.mirror(feature, plane='YZ'); doc, result_obj = m.finish() (raises with the failing feature's message).",
+      "signature": "cadkit.Model(name, **params).sketch/pad/pocket/revolve/fillet/chamfer/polar_pattern/linear_pattern/mirror/finish",
+      "limitations": [
+        "Fillet/chamfer reference edges by name and can break when parameters change (topological naming); prefer Sketch.rounded_rect and verify with validation.flexTests."
+      ]
+    },
+    {
+      "id": "api.cadkit.sketch",
+      "kind": "api",
+      "title": "cadkit.Sketch - fully constrained sketch primitives",
+      "module": "cadkit",
+      "tags": [
+        "cadkit",
+        "sketch",
+        "rect",
+        "rectangle",
+        "rounded_rect",
+        "rounded rectangle",
+        "circle",
+        "hole",
+        "polygon",
+        "slot",
+        "fully constrained",
+        "dof"
+      ],
+      "freecadVersions": [
+        "1.1"
+      ],
+      "summary": "Every primitive is fully constrained (DoF 0) and pinned to the sketch origin. s.rect(x, y, w, h, center=False, label=None); s.rounded_rect(x, y, w, h, r, center=False) (corner radii in the sketch - robust under flex tests); s.circle(cx, cy, d) (diameter!); s.polygon([(x, y), ...]) (each vertex pinned); s.slot(x1, y1, x2, y2, width). label names the driving constraints (e.g. 'PlateW').",
+      "signature": "Sketch.rect | rounded_rect | circle | polygon | slot"
+    },
+    {
+      "id": "api.cadkit.standards",
+      "kind": "api",
+      "title": "cadkit fastener standards and selectors",
+      "module": "cadkit",
+      "tags": [
+        "cadkit",
+        "clearance",
+        "tap drill",
+        "counterbore",
+        "ISO 273",
+        "ISO 4762",
+        "M3",
+        "M4",
+        "M5",
+        "M6",
+        "M8",
+        "M10",
+        "bolt",
+        "screw",
+        "fastener",
+        "edges",
+        "faces",
+        "selector",
+        "pattern points"
+      ],
+      "freecadVersions": [
+        "1.1"
+      ],
+      "summary": "cadkit.clearance('M6', fit='fine'|'medium'|'coarse') -> 6.6 (ISO 273); cadkit.tap_drill('M6') -> 5.0; cadkit.counterbore('M6') -> (11.0, 6.4) for ISO 4762 SHCS. cadkit.edges(shape, kind='line'|'circle', parallel='X'|'Y'|'Z', at={'z': v}, radius=r) and cadkit.faces(shape, normal='+Z', at={...}) return 'EdgeN'/'FaceN' names chosen by geometry. cadkit.rect_pattern(x0, y0, dx, dy, nx, ny), cadkit.polar_points(radius, count, start_deg=0) return (x, y) lists."
+    },
+    {
+      "id": "example.cadkit.mounting_plate",
+      "kind": "example",
+      "title": "Mounting plate in 10 lines with cadkit (rounded corners, M6 clearance holes)",
+      "module": "cadkit",
+      "tags": [
+        "cadkit",
+        "plate",
+        "mounting",
+        "holes",
+        "M6",
+        "rounded corners",
+        "short",
+        "parametric",
+        "flex"
+      ],
+      "freecadVersions": [
+        "1.1"
+      ],
+      "summary": "Same plate as example.partdesign.mounting_plate plus 3 mm sketch-level corner radii: fully constrained, spreadsheet-driven, passes flexTests. Parameters: length, width, thickness, hole, edge, corner.",
+      "example": "cadkit_mounting_plate.py",
+      "parameters": {
+        "length": 120,
+        "width": 80,
+        "thickness": 10,
+        "hole": 6.6,
+        "edge": 12,
+        "corner": 3
+      },
+      "validationExample": {
+        "expectedBoundingBoxMm": [
+          120,
+          80,
+          10
+        ],
+        "requireFullyConstrained": true,
+        "holes": [
+          {
+            "diameterMm": 6.6,
+            "centersMm": [
+              [
+                12,
+                12
+              ],
+              [
+                108,
+                12
+              ],
+              [
+                12,
+                68
+              ],
+              [
+                108,
+                68
+              ]
+            ]
+          }
+        ],
+        "flexTests": [
+          {
+            "set": {
+              "length": 160
+            },
+            "expect": {
+              "boundingBoxMm": [
+                160,
+                80,
+                10
+              ],
+              "holeCount": 4
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "example.cadkit.enclosure_lid",
+      "kind": "example",
+      "title": "Enclosure lid: centred plate, counterbored M3 holes, slot, chamfer (cadkit)",
+      "module": "cadkit",
+      "tags": [
+        "cadkit",
+        "enclosure",
+        "lid",
+        "cover",
+        "counterbore",
+        "M3",
+        "slot",
+        "chamfer",
+        "centered",
+        "offset sketch",
+        "box"
+      ],
+      "freecadVersions": [
+        "1.1"
+      ],
+      "summary": "Centred rectangle pad, through holes + counterbore pockets from a sketch offset to the top plane, a stadium slot, chamfered top edges selected by geometry.",
+      "example": "cadkit_enclosure_lid.py",
+      "parameters": {
+        "length": 100,
+        "width": 60,
+        "thickness": 4,
+        "inset": 6,
+        "slot_len": 30,
+        "slot_w": 5
+      }
+    },
+    {
+      "id": "pitfall.flex_fragility",
+      "kind": "pitfall",
+      "title": "Model builds once but breaks when a parameter changes",
+      "module": "PartDesign",
+      "tags": [
+        "flex",
+        "robustness",
+        "topological naming",
+        "fillet",
+        "chamfer",
+        "parameter change",
+        "rebuild",
+        "fragile"
+      ],
+      "freecadVersions": [
+        "1.0",
+        "1.1"
+      ],
+      "summary": "Dress-up features (Fillet/Chamfer) and face-attached sketches store sub-element names that shift when dimensions change. Prove robustness with validation.flexTests; fix by moving rounds into sketches (cadkit rounded_rect), attaching sketches to origin planes with offsets, and binding every dimension to the Params spreadsheet."
+    },
+    {
+      "id": "contract.preview",
+      "kind": "contract",
+      "title": "Rendered preview (PNG) - let the model see the part",
+      "module": "contract",
+      "tags": [
+        "preview",
+        "png",
+        "render",
+        "image",
+        "view",
+        "screenshot",
+        "iso",
+        "top",
+        "front",
+        "right",
+        "see"
+      ],
+      "freecadVersions": [
+        "1.1"
+      ],
+      "summary": "Add 'PNG' to outputs: the verify phase renders preview.png headlessly (no GUI): iso/top/front/right at one shared scale, hidden-line removal, overall dimensions and a bbox/volume caption. In Code Mode return cad.preview(jobId) to receive it as image content. Needs 'STEP' or 'FCStd' in outputs too."
+    }
+  ]
+}

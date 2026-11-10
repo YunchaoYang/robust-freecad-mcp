@@ -1,0 +1,46 @@
+{
+  "description": "NL->CAD tasks. `prompt` is all the agent sees; `hidden` is the grader's spec, checked on the agent's exported STEP in a fresh sandboxed FreeCAD process. Bounding boxes are compared orientation-free (sorted extents); holes are matched by diameter on any axis.",
+  "tolerances": {"lengthMm": 0.05, "volumePct": 0.5, "diameterMm": 0.05},
+  "tasks": [
+    {
+      "id": "mounting_plate",
+      "prompt": "Design a 120 x 80 x 10 mm aluminium mounting plate with four M6 clearance holes (ISO 273 medium fit), each 12 mm from the two nearest edges. Export FCStd and STEP.",
+      "hidden": {"bboxSorted": [10, 80, 120], "volumeMm3": 94631.52, "holes": {"6.6": 4}, "holeOffsetsFromEdges": {"diameter": 6.6, "offset": 12}}
+    },
+    {
+      "id": "bolt_flange",
+      "prompt": "Model a round flange: outer diameter 100 mm, thickness 8 mm, central bore 30 mm, and six 9 mm bolt holes equally spaced on a 75 mm pitch circle. Export STEP.",
+      "hidden": {"bboxSorted": [8, 100, 100], "volumeMm3": 54123.36, "holes": {"9.0": 6, "30.0": 1}}
+    },
+    {
+      "id": "l_bracket",
+      "prompt": "Make an L-shaped angle bracket: both legs 40 mm long measured on the outside, 5 mm thick, 30 mm wide, with no fillets. Export STEP.",
+      "hidden": {"bboxSorted": [30, 40, 40], "volumeMm3": 11250.0, "holes": {}}
+    },
+    {
+      "id": "stepped_shaft",
+      "prompt": "Create a stepped shaft: a 20 mm diameter section 30 mm long followed coaxially by a 12 mm diameter section 40 mm long. No chamfers. Export STEP.",
+      "hidden": {"bboxSorted": [20, 20, 70], "volumeMm3": 13948.67, "holes": {}}
+    },
+    {
+      "id": "washer",
+      "prompt": "Make a flat washer with outer diameter 24 mm, inner diameter 13 mm and thickness 3 mm. Export STEP.",
+      "hidden": {"bboxSorted": [3, 24, 24], "volumeMm3": 958.97, "holes": {"13.0": 1}}
+    },
+    {
+      "id": "open_box",
+      "prompt": "Model an open-top rectangular tray: outside 60 x 40 x 30 mm, 5 mm walls, 5 mm floor, sharp corners. Export STEP.",
+      "hidden": {"bboxSorted": [30, 40, 60], "volumeMm3": 34500.0, "holes": {}}
+    },
+    {
+      "id": "hub_with_tapped_holes",
+      "prompt": "Model a cylindrical hub 40 mm in diameter and 20 mm tall with a 10 mm through bore on its axis, plus four flat-bottomed M8 tap-drill holes, 15 mm deep, drilled into the top face on a 28 mm pitch circle. Export STEP.",
+      "hidden": {"bboxSorted": [20, 40, 40], "volumeMm3": 21382.9, "holes": {"10.0": 1, "6.8": 4}}
+    },
+    {
+      "id": "hex_standoff",
+      "prompt": "Make a hexagonal standoff 10 mm across flats and 20 mm long, with a through hole sized as the tap drill for M5 along its axis. Export STEP.",
+      "hidden": {"bboxSortedApprox": [[10, 11.547], [10, 11.547], [20, 20]], "volumeMm3": 1454.96, "holes": {"4.2": 1}}
+    }
+  ]
+}

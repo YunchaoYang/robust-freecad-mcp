@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "freecad-codemode": {
+      "command": "~/micromamba/envs/freecad-mcp/bin/node",
+      "args": ["<repo>/dist/apps/mcp-server/src/server.js"],
+      "env": { "FREECAD_MCP_PYTHON": "~/micromamba/envs/freecad-mcp/bin/python" },
+      "exposure": "direct",
+      "timeout": 600,
+      "description": "FreeCAD Code Mode: build, validate, render and export parametric CAD parts"
+    }
+  }
+}

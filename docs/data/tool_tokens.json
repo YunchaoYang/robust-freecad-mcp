@@ -1,0 +1,134 @@
+{
+ "measuredAt": "2026-11-06",
+ "tokenEstimate": "bytes / 4 of the compact JSON tool definitions (name, description, inputSchema)",
+ "servers": {
+  "neka-nat/freecad-mcp": {
+   "tools": 17,
+   "bytes": 23609,
+   "approxTokens": 5902,
+   "stars": 3239,
+   "pushed": "2026-10-25",
+   "kernel": "FreeCAD",
+   "mode": "GUI addon (XML-RPC)",
+   "method": "static: AST of tool registrations"
+  },
+  "spkane/freecad-addon-robust-mcp-server": {
+   "tools": 170,
+   "bytes": 174547,
+   "approxTokens": 43637,
+   "stars": 265,
+   "pushed": "2026-11-06",
+   "kernel": "FreeCAD",
+   "mode": "GUI addon / headless",
+   "method": "static: AST of tool registrations"
+  },
+  "blwfish/freecad-mcp": {
+   "tools": 41,
+   "bytes": 58271,
+   "approxTokens": 14568,
+   "stars": 65,
+   "pushed": "2026-11-02",
+   "kernel": "FreeCAD",
+   "mode": "GUI addon (sockets)",
+   "method": "static: AST of tool registrations"
+  },
+  "sandraschi/freecad-mcp": {
+   "tools": 59,
+   "bytes": 89599,
+   "approxTokens": 22400,
+   "stars": 33,
+   "pushed": "2026-11-06",
+   "kernel": "FreeCAD",
+   "mode": "HTTP + bridge",
+   "method": "static: AST of tool registrations"
+  },
+  "bonninr/freecad_mcp": {
+   "tools": 2,
+   "bytes": 827,
+   "approxTokens": 207,
+   "stars": 228,
+   "pushed": "2025-03-20",
+   "kernel": "FreeCAD",
+   "mode": "GUI addon (TCP)",
+   "method": "static: AST of tool registrations"
+  },
+  "contextform/freecad-mcp": {
+   "tools": 7,
+   "bytes": 5768,
+   "approxTokens": 1442,
+   "stars": 139,
+   "pushed": "2025-08-15",
+   "kernel": "FreeCAD",
+   "mode": "GUI addon (socket)",
+   "method": "static: AST of tool registrations"
+  },
+  "CREATeNG/freecad-mcp-bridge": {
+   "tools": 3,
+   "bytes": 1278,
+   "approxTokens": 320,
+   "stars": 24,
+   "pushed": "2026-11-05",
+   "kernel": "FreeCAD",
+   "mode": "in-FreeCAD HTTP",
+   "method": "static: AST of tool registrations"
+  },
+  "theosib/FreeCAD-MCP-Server": {
+   "tools": 9,
+   "bytes": 5422,
+   "approxTokens": 1356,
+   "stars": 37,
+   "pushed": "2026-03-05",
+   "kernel": "FreeCAD",
+   "mode": "GUI addon (RPC)",
+   "method": "static: AST of tool registrations"
+  },
+  "timianmalloo/freecad-headless-mcp": {
+   "tools": 3,
+   "bytes": 1050,
+   "approxTokens": 262,
+   "stars": 1,
+   "pushed": "2026-05-12",
+   "kernel": "FreeCAD",
+   "mode": "headless",
+   "method": "static: AST of tool registrations"
+  },
+  "dcc-mcp/dcc-mcp-freecad": {
+   "tools": 43,
+   "bytes": 46237,
+   "approxTokens": 11559,
+   "stars": 2,
+   "pushed": "2026-10-25",
+   "kernel": "FreeCAD",
+   "mode": "headless (skills, deferred)",
+   "method": "static: tools.yaml (all skills loaded)"
+  },
+  "pzfreo/build123d-mcp": {
+   "tools": 50,
+   "bytes": 50168,
+   "approxTokens": 12542,
+   "stars": 143,
+   "pushed": "2026-10-15",
+   "kernel": "build123d",
+   "mode": "headless",
+   "method": "static: AST of tool registrations"
+  },
+  "RobertCoop/openscad-mcp": {
+   "tools": 12,
+   "bytes": 19035,
+   "approxTokens": 4759,
+   "stars": 170,
+   "pushed": "2026-09-10",
+   "kernel": "OpenSCAD",
+   "mode": "headless",
+   "method": "static: AST of tool registrations"
+  },
+  "this server": {
+   "tools": 4,
+   "bytes": 8193,
+   "approxTokens": 2048,
+   "kernel": "FreeCAD 1.1.3",
+   "mode": "headless, sandboxed, Code Mode",
+   "method": "exact: live tools/list"
+  }
+ }
+}
