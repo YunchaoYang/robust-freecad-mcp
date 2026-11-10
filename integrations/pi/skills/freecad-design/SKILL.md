@@ -1,11 +1,11 @@
 ---
 name: freecad-design
-description: Design mechanical parts in FreeCAD through the freecad-codemode MCP server, with server-side validation and a rendered preview. Use when the user asks for a CAD part, STEP/FCStd file, bracket, plate, flange, enclosure or similar.
+description: Design mechanical parts in FreeCAD through the robust-freecad MCP server, with server-side validation and a rendered preview. Use when the user asks for a CAD part, STEP/FCStd file, bracket, plate, flange, enclosure or similar.
 ---
 
 # FreeCAD design loop
 
-Tools: `mcp__freecad-codemode__search`, `mcp__freecad-codemode__execute` (plus `job_status`, `artifacts`).
+Tools: `mcp__robust-freecad__search`, `mcp__robust-freecad__execute` (plus `job_status`, `artifacts`).
 
 1. **Write the acceptance test first.** Turn the request into a `validation` object before writing any geometry:
    `expectedBoundingBoxMm` (X = length, Y = width, Z = thickness), `holes` (centres from the bounding-box min corner),

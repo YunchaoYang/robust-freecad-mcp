@@ -16,7 +16,7 @@ import type { ExecutionLimits } from "./limits.js";
  */
 export const BRIDGE_API_VERSION = "1.2";
 export const PREVIEW_MARKER = "$cadPreview";
-export const SERVER_ID = "freecad-codemode-mcp";
+export const SERVER_ID = "robust-freecad-mcp";
 
 export type BridgeMethod = (arg: unknown, ctx: BridgeContext) => Promise<unknown>;
 

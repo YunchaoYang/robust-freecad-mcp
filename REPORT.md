@@ -1,6 +1,6 @@
-# freecad-codemode-mcp：最终报告
+# robust-freecad-mcp：最终报告
 
-日期：2026-11-06（2026-11-10 补充本地模型运行） · 代码目录：`/home/yangy78/work/freeCAD/freecad-codemode-mcp`
+日期：2026-11-06（2026-11-10 补充本地模型运行） · 仓库：https://github.com/YunchaoYang/robust-freecad-mcp
 依据：`FreeCAD_Code_Mode_MCP_Build_Plan.md`（v1.0）
 
 ---
@@ -24,7 +24,8 @@
 | 计划第 6 阶段验收（`claude -p` 仅用本服务器） | 5 轮、约 34 s、$0.26，14/14 检查一次通过 |
 | Token：完整脚本 + 完整结果 vs `exampleId` + 紧凑结果 | **≈1,975 vs ≈132**（约 15 倍） |
 | 工具定义首付成本（`tools/list`，4 个工具） | 8,514 字节 ≈ 2,128 tokens |
-| **嵌入式 pi 智能体 + 本地 Qwen3.8-27B（vLLM，localhost:8000）** | **安装板一次成功：15/15 检查通过，视觉复核通过，2 次迭代，约 6.6 分钟，$0** |
+| **嵌入式 pi 智能体 + 本地 Qwen3.8-27B（vLLM，localhost:8000）** | 单次试跑：安装板 15/15 检查通过，视觉复核通过 |
+| **本地 Qwen 8 任务评测（同一隐藏规格判分）** | **5 / 8 通过，误报 0**；3 个失败都是 15 分钟超时，其中 2 个由已修复的 `import App` 问题引起；中位耗时 573 s，$0 |
 
 > 评测说明：样本小，只有单零件、单次运行。评测由协作会话（freecad-97）完成，方法见第 6 节。
 
@@ -177,6 +178,31 @@ FreeCAD worker，验证阶段（新进程，不运行作业代码）：重新导
 
 ---
 
+### 本地 Qwen3.8-27B 跑 8 个评测任务（`design` 智能体，2026-11-10）
+
+![评测对比](docs/images/eval-design-light.png)
+
+设置：任务和隐藏规格判分与 Claude Code 那轮完全相同；智能体换成服务器内嵌的 pi 流程（写规格 → 锁定 → 建模 → 看图复核）。具体参数：Qwen3.8-27B（vLLM 0.32，FP8），思考强度 `low`，每个任务最多 4 次迭代、限时 15 分钟，2 个任务并行，每个任务跑 1 次。数据在 `docs/data/eval_design_qwen.json`，复现命令为 `python3 tests/eval/run_design_eval.py`。
+
+| 任务 | 智能体自报 | 隐藏规格 | 迭代 | 耗时 | 锁定检查 | 输入 / 输出 tokens |
+|---|---|---|---|---|---|---|
+| 安装板 | 成功 | ✅ | 1 | 354 s | 14/14 | 13.7k / 5.9k |
+| 螺栓法兰 | 成功 | ✅ | 2 | 657 s | 17/17 | 41.1k / 10.6k |
+| L 形支架 | 超时取消 | ❌ 无零件 | 1 | 901 s | — | 28.1k / 12.6k |
+| 阶梯轴 | 成功 | ✅ | 1 | 298 s | 9/9 | 15.3k / 4.7k |
+| 垫圈 | 成功 | ✅ | 3 | 413 s | 11/11 | 75.1k / 5.9k |
+| 开口托盘 | 成功 | ✅ | 3 | 490 s | 9/9 | 38.1k / 7.6k |
+| 带螺纹孔的轮毂 | 超时取消 | ❌ 无零件 | 1 | 901 s | — | 17.9k / 12.1k |
+| 六角支柱 | 超时取消 | ❌ 无零件 | 0 | 901 s | — | 0.6k / 5.7k |
+
+![Qwen 生成的零件](docs/images/qwen-parts.png)
+
+结论：
+- **5/8 通过，误报 0。** 智能体自报成功的 5 个，全部通过了独立的隐藏规格判分。"锁定规格 + 独立测量"这套机制在本地模型上同样可信：它没有把失败的零件说成成功。
+- **两个失败是我们服务器的问题，已修复。** L 形支架和轮毂的脚本都写了 `import App`。FreeCAD 环境里恰好有另一个同名模块，覆盖了预先注入的 `App`，导致报错 `module 'App' has no attribute 'newDocument'`。现在执行任务脚本前会把 `App` 指向 FreeCAD，并加了回归测试。
+- **超时的直接原因很可能是单次生成过长。** 出错后（或六角支柱一开始），模型很久没有提交新作业，直到 15 分钟上限。当时单次输出上限是 16k tokens，本地生成速度下最长要十几分钟。现在本地模型的上限降到 8k，可通过 `FREECAD_MCP_DESIGN_MAX_TOKENS` 调整。
+- **速度：** Claude Code（云端，MCP 客户端）每个任务 11–20 s，本地 Qwen 每个任务 5–11 分钟。差距主要来自模型和硬件，**不能**用来说明 Code Mode 的作用。Code Mode 的作用见下面的消融实验。
+
 ## 7. 风险与局限
 
 | 项目 | 说明 |
@@ -185,8 +211,8 @@ FreeCAD worker，验证阶段（新进程，不运行作业代码）：重新导
 | 容器/microVM | `infra/` 下的 Dockerfile 和 compose 文件**未验证** |
 | Landlock 读权限 | 作业可以读取 FreeCAD 环境前缀和系统库（其中没有敏感信息，但属于可读面） |
 | 磁盘配额 | 只有单文件大小限制，没有作业总量配额 |
-| 嵌入式智能体 | 真实模型只跑过 1 次（本地 Qwen，成功）；美元预算中止未实测；设计记录不持久化；日志未记录不提交作业的迭代 |
-| 品牌 | 暂用 `freecad-codemode-mcp`；`freecad-mcp-pro` 已被占用，命名待定 |
+| 嵌入式智能体 | 本地 Qwen 8 任务 5/8（每个任务只跑 1 次）；本地生成慢，有超时风险（已把单次输出上限降到 8k）；美元预算中止未实测；设计记录不持久化 |
+| 品牌 | 已定名 `robust-freecad-mcp`（MCP 服务器名 `robust-freecad`） |
 | 版本控制 | 项目尚未建立 git 仓库 |
 
 ---
@@ -205,7 +231,7 @@ FreeCAD worker，验证阶段（新进程，不运行作业代码）：重新导
 ## 9. 复现方式
 
 ```bash
-cd /home/yangy78/work/freeCAD/freecad-codemode-mcp
+cd robust-freecad-mcp
 export PATH=~/micromamba/envs/freecad-mcp/bin:$PATH
 npm test                                         # 34 项 Node 测试
 python3 -m unittest discover -s tests/cad        # 28 项 Python 测试

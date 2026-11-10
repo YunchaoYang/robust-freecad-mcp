@@ -17,7 +17,7 @@
 
 ### Where this project stands
 
-| | Typical existing server | **freecad-codemode-mcp** |
+| | Typical existing server | **robust-freecad-mcp** |
 |---|---|---|
 | Runtime | live GUI session reached over a socket | headless FreeCAD 1.1.3, a fresh process per job |
 | Untrusted Python | runs with the user's full privileges | Landlock (filesystem allowlist, TCP deny, signal/abstract-socket scoping) + seccomp (no sockets, exec or fork) + rlimits. Escapes are tested in `tests/cad`. |

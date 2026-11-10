@@ -12,7 +12,7 @@ import { registerJobStatus } from "./tools/job-status.js";
 import { registerSearch } from "./tools/search.js";
 import { connectStdio } from "./transport/stdio.js";
 
-export const SERVER_NAME = "freecad-codemode";
+export const SERVER_NAME = "robust-freecad";
 export const SERVER_VERSION = "0.1.0";
 
 export interface ServerOptions {

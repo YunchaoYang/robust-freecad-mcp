@@ -9,3 +9,5 @@ __pycache__/
 *~
 # work in progress (not yet committed)
 CLAUDE.md
+# machine-local MCP client config (template: .mcp.json.example)
+.mcp.json

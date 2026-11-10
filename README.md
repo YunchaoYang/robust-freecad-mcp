@@ -14,7 +14,7 @@ with flex tests. Untrusted CAD code runs in a **kernel sandbox**, and the agent 
 ![MCP](https://img.shields.io/badge/MCP-stdio-6f42c1)
 ![Code Mode](https://img.shields.io/badge/Code%20Mode-QuickJS%20sandbox-orange)
 ![Sandbox](https://img.shields.io/badge/jobs-Landlock%20%2B%20seccomp-success)
-![Tests](https://img.shields.io/badge/tests-34%20node%20%2B%2028%20python-brightgreen)
+![Tests](https://img.shields.io/badge/tests-35%20node%20%2B%2029%20python-brightgreen)
 ![Eval](https://img.shields.io/badge/NL%E2%86%92CAD%20eval-8%2F8-brightgreen)
 ![pi](https://img.shields.io/badge/embedded%20agent-pi%201.5-informational)
 
@@ -38,7 +38,7 @@ with flex tests. Untrusted CAD code runs in a **kernel sandbox**, and the agent 
 
 ## Why it's different
 
-| | Typical FreeCAD MCP server | **freecad-codemode-mcp** |
+| | Typical FreeCAD MCP server | **robust-freecad-mcp** |
 |---|---|---|
 | **How the agent works** | 7–60 tools, one round-trip per operation | **4 tools.** The agent writes a short JS program that drives a typed `cad` API: loops, parallel variants and repairs in **one call** |
 | **Did it work?** | "The script ran" | **Measured**: validity, solids, bounding box, volume, every hole's position, diameter and depth, mass, sketch degrees of freedom |
@@ -220,7 +220,7 @@ return catalog.entries.filter(e => e.kind === "pitfall").map(e => [e.id, e.summa
 git clone https://github.com/YunchaoYang/robust-freecad-mcp.git && cd robust-freecad-mcp
 ./scripts/setup-env.sh                      # micromamba env: FreeCAD 1.1.3 + Node 22, npm ci, build (no root)
 
-claude mcp add freecad-codemode \
+claude mcp add robust-freecad \
   -e FREECAD_MCP_PYTHON=$HOME/micromamba/envs/freecad-mcp/bin/python \
   -- $HOME/micromamba/envs/freecad-mcp/bin/node $PWD/dist/apps/mcp-server/src/server.js
 ```
@@ -232,7 +232,7 @@ edges. Make it parametric, validate it and show me a render."*
 <summary><b>pi</b>, the <b>MCP Inspector</b> and other clients</summary>
 
 ```bash
-pi mcp add freecad-codemode --env FREECAD_MCP_PYTHON=$HOME/micromamba/envs/freecad-mcp/bin/python \
+pi mcp add robust-freecad --env FREECAD_MCP_PYTHON=$HOME/micromamba/envs/freecad-mcp/bin/python \
   -- $HOME/micromamba/envs/freecad-mcp/bin/node $PWD/dist/apps/mcp-server/src/server.js
 ```
 
@@ -245,7 +245,7 @@ spec-first design loop.
 npm run inspector                           # MCP Inspector UI
 ```
 
-Any client that speaks MCP over stdio works. The included `.mcp.json` is project-scoped for Claude Code.
+Any client that speaks MCP over stdio works. Copy [`.mcp.json.example`](.mcp.json.example) to `.mcp.json` (fill in your paths) for a project-scoped Claude Code config.
 </details>
 
 ## Reference
@@ -337,6 +337,16 @@ hub with tapped holes, hex standoff. The median run took 4 turns and 11–20 s p
   and plate edge offsets, and it passes the reference solutions for all 8 tasks.
 - *Caveat: a small, single-part, single-run suite.* Reproduce with `python3 tests/eval/run_eval.py`.
 
+**Local model, server-side agent:** the same 8 tasks and grader with the embedded pi `design` agent on a **local
+Qwen3.8-27B (vLLM)** gave **5/8 passes and 0 false positives**: every part the agent called done also passed the hidden spec.
+The 3 failures hit the 15-min limit. Two came from an `import App` shadowing bug that is now fixed. Data:
+[`docs/data/eval_design_qwen.json`](docs/data/eval_design_qwen.json).
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/eval-design-dark.svg">
+  <img src="docs/images/eval-design-light.svg" alt="Claude Code via MCP vs local Qwen via embedded agent">
+</picture>
+
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/images/tool-tokens-dark.svg">
   <img src="docs/images/tool-tokens-light.svg" alt="Upfront tool-definition tokens across FreeCAD MCP servers">
@@ -348,8 +358,8 @@ Tokens ≈ bytes / 4. Data: [`docs/data/`](docs/data/).</sub>
 ## Tests
 
 ```bash
-npm test                                      # 34 tests: JS sandbox & budgets, MCP protocol, e2e on real FreeCAD, embedded pi agent
-python3 -m unittest discover -s tests/cad     # 28 tests: worker, plate gate, editability, renders, escapes
+npm test                                      # 35 tests: JS sandbox & budgets, MCP protocol, e2e on real FreeCAD, embedded pi agent
+python3 -m unittest discover -s tests/cad     # 29 tests: worker, plate gate, editability, renders, escapes
 ```
 
 The end-to-end suite drives the built server over stdio. It builds, validates, renders and flex-tests parts,

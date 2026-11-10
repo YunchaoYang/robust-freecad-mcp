@@ -147,6 +147,13 @@ class ActionableFailures(unittest.TestCase):
         self.assertIn("line 3", b["error"]["traceback"])
         self.assertIn("no_such_method", b["error"]["traceback"])
 
+    def test_import_app_resolves_to_freecad(self):
+        # Regression (local-model eval): `import App` used to pick up an unrelated module named App.
+        script = "import App\nimport FreeCAD as FC\nimport Part\ndoc = App.newDocument('x')\nresult_obj = doc.addObject('Part::Box', 'B')\nassert App is FC\n"
+        r = run_job(script, outputs=("STEP",), validation={"expectedBoundingBoxMm": [10, 10, 10]})
+        self.assertTrue(r["build"]["ok"], r["build"].get("error"))
+        self.assertTrue(r["verify"]["ok"], failed_checks(r["verify"]))
+
     def test_contract_missing_result(self):
         b = run_job("doc = App.newDocument('x')\nPart.makeBox(1, 1, 1)\n")["build"]
         self.assertEqual(b["error"]["code"], "SCRIPT_CONTRACT")

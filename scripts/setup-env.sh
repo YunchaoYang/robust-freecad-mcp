@@ -20,4 +20,4 @@ npm run build
 echo
 echo "FREECAD_MCP_PYTHON=$PREFIX/bin/python"
 echo "Register with Claude Code:"
-echo "  claude mcp add freecad-codemode -e FREECAD_MCP_PYTHON=$PREFIX/bin/python -- $PREFIX/bin/node $PWD/dist/apps/mcp-server/src/server.js"
+echo "  claude mcp add robust-freecad -e FREECAD_MCP_PYTHON=$PREFIX/bin/python -- $PREFIX/bin/node $PWD/dist/apps/mcp-server/src/server.js"

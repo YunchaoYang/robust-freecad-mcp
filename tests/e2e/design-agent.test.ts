@@ -16,6 +16,7 @@ const faux = registerFauxProvider({ models: [{ id: "faux-cad", input: ["text", "
 let designModel: DesignModel;
 let client: Client;
 let close: () => Promise<void>;
+let designsRef: import("../../apps/design-agent/src/design-manager.js").DesignManager | undefined;
 const seen = { reviewerGotImage: false, builderGotImage: false };
 
 type Ctx = { messages: { role: string; content: unknown }[] };
@@ -80,6 +81,7 @@ before(async () => {
   } as never);
   designModel = { modelRuntime, model: modelRuntime.getModel(m.provider, m.id)! };
   const created = createServer({ dataDir: tmpDataDir("design"), pythonPath: PYTHON }, { enableDesign: true, designModel });
+  designsRef = created.designs;
   const [a, b] = InMemoryTransport.createLinkedPair();
   await created.server.connect(a);
   client = new Client({ name: "design-test", version: "0" });
@@ -170,5 +172,33 @@ test("design tool: visual mismatch is fed back to the builder and re-reviewed", 
   assert.equal(rec.visualReview[0].matches, false);
   assert.equal(rec.visualReview[1].matches, true);
   assert.equal(rec.iterations, 2);
+  assert.equal(faux.getPendingResponseCount(), 0);
+});
+
+test("design agent, classic tool mode (ablation baseline): full scripts, full results, same locked spec", { skip, timeout: 300_000 }, async () => {
+  const box = (len: number) =>
+    `doc = App.newDocument("B")\nresult_obj = doc.addObject("Part::Box", "Box")\nresult_obj.Length = ${len}\nresult_obj.Width = 20\nresult_obj.Height = 10`;
+  let sawFullResult = false;
+  faux.setResponses([
+    fauxAssistantMessage("```json\n" + JSON.stringify({ validation: { expectedBoundingBoxMm: [20, 20, 10] }, notes: "block" }) + "\n```"),
+    fauxAssistantMessage([fauxToolCall("cad_submit", { script: box(30), outputs: ["STEP"] })], { stopReason: "toolUse" }),
+    (ctx: Ctx) => fauxAssistantMessage([fauxToolCall("cad_status", { id: lastJobId(ctx)! })], { stopReason: "toolUse" }),
+    (ctx: Ctx) => {
+      sawFullResult = /\\?"checks\\?":\[/.test(lastText(ctx)) && /boundingBox/.test(lastText(ctx));
+      return fauxAssistantMessage([fauxToolCall("cad_submit", { script: box(20) })], { stopReason: "toolUse" });
+    },
+    (ctx: Ctx) => fauxAssistantMessage([fauxToolCall("cad_status", { id: lastJobId(ctx)! })], { stopReason: "toolUse" }),
+    (ctx: Ctx) => fauxAssistantMessage(`DONE ${lastJobId(ctx)}`),
+    fauxAssistantMessage('```json\n{"matches": true, "issues": []}\n```'),
+  ] as never);
+  const rec = await designsRef!.start("local", "20 x 20 x 10 mm block", { toolMode: "classic" });
+  await designsRef!.wait("local", rec.id, 240_000);
+  assert.equal(rec.status, "succeeded", JSON.stringify({ error: rec.error, events: rec.events }));
+  assert.equal(rec.toolMode, "classic");
+  assert.equal(rec.iterations, 2);
+  assert.ok(sawFullResult, "classic cad_status returns the full result with every check");
+  assert.ok((rec.modelCalls?.build ?? 0) >= 5, JSON.stringify(rec.modelCalls));
+  assert.ok((rec.stageMs?.build ?? 0) > 0);
+  assert.deepEqual(rec.result?.geometry?.bbox, [20, 20, 10]);
   assert.equal(faux.getPendingResponseCount(), 0);
 });

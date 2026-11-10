@@ -1,0 +1,652 @@
+{
+ "summary": {
+  "agent": "embedded pi design agent (spec -> locked build -> visual review)",
+  "model": "Qwen3.8-27B",
+  "endpoint": "http://localhost:8000/v1",
+  "thinking": "low",
+  "tasks": 8,
+  "passedHidden": 5,
+  "agentReportedSuccess": 5,
+  "falsePositives": 0,
+  "falseNegatives": 0,
+  "medianIterations": 1.0,
+  "medianWallSec": 573.4000000000001,
+  "totalWallSec": 2645.8,
+  "workers": 2,
+  "totalTokens": {
+   "input": 229903,
+   "output": 65046
+  },
+  "costUsd": 0,
+  "date": "2026-11-10",
+  "runsPerTask": 1,
+  "workDir": "data/eval-design/20261110-151512"
+ },
+ "results": [
+  {
+   "id": "mounting_plate",
+   "agentStatus": "succeeded",
+   "pass": true,
+   "grade": {
+    "pass": true,
+    "checks": {
+     "validSolid": true,
+     "bbox": true,
+     "volume": true,
+     "holes": true,
+     "holePositions": true
+    },
+    "measured": {
+     "bboxSorted": [
+      10.0,
+      80.0,
+      120.0
+     ],
+     "volumeMm3": 94631.522,
+     "holes": {
+      "6.6": 4
+     }
+    }
+   },
+   "iterations": 1,
+   "wallSec": 354.2,
+   "tokens": {
+    "input": 13711,
+    "output": 5859,
+    "cacheRead": 0,
+    "cacheWrite": 0
+   },
+   "lockedChecks": {
+    "passed": 14,
+    "total": 14
+   },
+   "failedLocked": [],
+   "visualReview": [
+    {
+     "matches": true,
+     "issues": []
+    }
+   ],
+   "validationSpec": {
+    "requireValidShape": true,
+    "requireSolid": true,
+    "expectedBoundingBoxMm": [
+     120,
+     80,
+     10
+    ],
+    "toleranceMm": 0.01,
+    "expectedVolumeMm3": 94631.52,
+    "volumeTolerancePct": 0.1,
+    "expectedSolidCount": 1,
+    "holes": [
+     {
+      "diameterMm": 6.6,
+      "centersMm": [
+       [
+        12,
+        12
+       ],
+       [
+        12,
+        68
+       ],
+       [
+        108,
+        12
+       ],
+       [
+        108,
+        68
+       ]
+      ],
+      "axis": "z",
+      "reference": "bboxMin",
+      "through": true
+     }
+    ],
+    "expectedHoleCount": 4,
+    "material": "aluminum_6061"
+   },
+   "jobId": "job_86NqbxS6nmIg5cazwlZAYA",
+   "error": null,
+   "events": [
+    "[spec] deriving acceptance spec from the request",
+    "[spec] locked spec: {\"requireValidShape\":true,\"requireSolid\":true,\"expectedBoundingBoxMm\":[120,80,10],\"toleranceMm\":0.01,\"expectedVolumeMm3\":94631.52,\"volumeTolerancePct\":0.1,\"expectedSolidCount\":1,\"holes\":[{\"diameterMm\":6.6,\"centersMm\":[[12,12],[12,68],[108,1",
+    "[build] building against the locked spec",
+    "[build] iteration 1: submitted job_86NqbxS6nmIg5cazwlZAYA",
+    "[review] visual review of job_86NqbxS6nmIg5cazwlZAYA",
+    "[done] succeeded in 353704 ms, $0"
+   ]
+  },
+  {
+   "id": "bolt_flange",
+   "agentStatus": "succeeded",
+   "pass": true,
+   "grade": {
+    "pass": true,
+    "checks": {
+     "validSolid": true,
+     "bbox": true,
+     "volume": true,
+     "holes": true
+    },
+    "measured": {
+     "bboxSorted": [
+      8.0,
+      100.0,
+      100.0
+     ],
+     "volumeMm3": 54123.358,
+     "holes": {
+      "9.0": 6,
+      "30.0": 1
+     }
+    }
+   },
+   "iterations": 2,
+   "wallSec": 657.2,
+   "tokens": {
+    "input": 41113,
+    "output": 10555,
+    "cacheRead": 0,
+    "cacheWrite": 0
+   },
+   "lockedChecks": {
+    "passed": 17,
+    "total": 17
+   },
+   "failedLocked": [],
+   "visualReview": [
+    {
+     "matches": true,
+     "issues": []
+    }
+   ],
+   "validationSpec": {
+    "requireValidShape": true,
+    "requireSolid": true,
+    "expectedBoundingBoxMm": [
+     100,
+     100,
+     8
+    ],
+    "toleranceMm": 0.01,
+    "expectedVolumeMm3": 54123.36,
+    "volumeTolerancePct": 0.5,
+    "expectedSolidCount": 1,
+    "holes": [
+     {
+      "diameterMm": 30,
+      "centersMm": [
+       [
+        0,
+        0
+       ]
+      ],
+      "axis": "z",
+      "reference": "origin",
+      "through": true
+     },
+     {
+      "diameterMm": 9,
+      "centersMm": [
+       [
+        37.5,
+        0
+       ],
+       [
+        18.75,
+        32.475953
+       ],
+       [
+        -18.75,
+        32.475953
+       ],
+       [
+        -37.5,
+        0
+       ],
+       [
+        -18.75,
+        -32.475953
+       ],
+       [
+        18.75,
+        -32.475953
+       ]
+      ],
+      "axis": "z",
+      "reference": "origin",
+      "through": true
+     }
+    ],
+    "expectedHoleCount": 7
+   },
+   "jobId": "job_LvVeZBU7sHGF46sauVejQA",
+   "error": null,
+   "events": [
+    "[spec] deriving acceptance spec from the request",
+    "[spec] locked spec: {\"requireValidShape\":true,\"requireSolid\":true,\"expectedBoundingBoxMm\":[100,100,8],\"toleranceMm\":0.01,\"expectedVolumeMm3\":54123.36,\"volumeTolerancePct\":0.5,\"expectedSolidCount\":1,\"holes\":[{\"diameterMm\":30,\"centersMm\":[[0,0]],\"axis\":\"z\",\"refe",
+    "[build] building against the locked spec",
+    "[build] iteration 1: submitted job_pVQdS2KvDpU0rMrsegAPUg",
+    "[build] iteration 2: submitted job_LvVeZBU7sHGF46sauVejQA",
+    "[review] visual review of job_LvVeZBU7sHGF46sauVejQA",
+    "[done] succeeded in 656678 ms, $0"
+   ]
+  },
+  {
+   "id": "l_bracket",
+   "agentStatus": "cancelled",
+   "pass": false,
+   "grade": {
+    "pass": false,
+    "checks": {
+     "artifact": false
+    }
+   },
+   "iterations": 1,
+   "wallSec": 900.7,
+   "tokens": {
+    "input": 28060,
+    "output": 12583,
+    "cacheRead": 0,
+    "cacheWrite": 0
+   },
+   "lockedChecks": null,
+   "failedLocked": [],
+   "visualReview": null,
+   "validationSpec": {
+    "requireValidShape": true,
+    "requireSolid": true,
+    "expectedBoundingBoxMm": [
+     40,
+     30,
+     40
+    ],
+    "expectedVolumeMm3": 11250,
+    "volumeTolerancePct": 1,
+    "expectedSolidCount": 1,
+    "expectedHoleCount": 0
+   },
+   "jobId": "job_TpTyS_bW7vyElXVj-CLCcQ",
+   "error": {
+    "code": "CANCELLED",
+    "message": "design cancelled",
+    "hint": "The job was cancelled."
+   },
+   "events": [
+    "[spec] deriving acceptance spec from the request",
+    "[spec] locked spec: {\"requireValidShape\":true,\"requireSolid\":true,\"expectedBoundingBoxMm\":[40,30,40],\"expectedVolumeMm3\":11250,\"volumeTolerancePct\":1,\"expectedSolidCount\":1,\"expectedHoleCount\":0}",
+    "[build] building against the locked spec",
+    "[build] iteration 1: submitted job_TpTyS_bW7vyElXVj-CLCcQ",
+    "[done] cancelled in 900005 ms, $0"
+   ]
+  },
+  {
+   "id": "stepped_shaft",
+   "agentStatus": "succeeded",
+   "pass": true,
+   "grade": {
+    "pass": true,
+    "checks": {
+     "validSolid": true,
+     "bbox": true,
+     "volume": true,
+     "holes": true
+    },
+    "measured": {
+     "bboxSorted": [
+      20.0,
+      20.0,
+      70.0
+     ],
+     "volumeMm3": 13948.671,
+     "holes": {}
+    }
+   },
+   "iterations": 1,
+   "wallSec": 297.9,
+   "tokens": {
+    "input": 15251,
+    "output": 4696,
+    "cacheRead": 0,
+    "cacheWrite": 0
+   },
+   "lockedChecks": {
+    "passed": 9,
+    "total": 9
+   },
+   "failedLocked": [],
+   "visualReview": [
+    {
+     "matches": true,
+     "issues": []
+    }
+   ],
+   "validationSpec": {
+    "requireValidShape": true,
+    "requireSolid": true,
+    "expectedBoundingBoxMm": [
+     70,
+     20,
+     20
+    ],
+    "toleranceMm": 0.01,
+    "expectedVolumeMm3": 13948.67,
+    "volumeTolerancePct": 0.1,
+    "expectedSolidCount": 1
+   },
+   "jobId": "job_CG51zpBFhVu7fyadjOPBkQ",
+   "error": null,
+   "events": [
+    "[spec] deriving acceptance spec from the request",
+    "[spec] locked spec: {\"requireValidShape\":true,\"requireSolid\":true,\"expectedBoundingBoxMm\":[70,20,20],\"toleranceMm\":0.01,\"expectedVolumeMm3\":13948.67,\"volumeTolerancePct\":0.1,\"expectedSolidCount\":1}",
+    "[build] building against the locked spec",
+    "[build] iteration 1: submitted job_CG51zpBFhVu7fyadjOPBkQ",
+    "[review] visual review of job_CG51zpBFhVu7fyadjOPBkQ",
+    "[done] succeeded in 297168 ms, $0"
+   ]
+  },
+  {
+   "id": "washer",
+   "agentStatus": "succeeded",
+   "pass": true,
+   "grade": {
+    "pass": true,
+    "checks": {
+     "validSolid": true,
+     "bbox": true,
+     "volume": true,
+     "holes": true
+    },
+    "measured": {
+     "bboxSorted": [
+      3.0,
+      24.0,
+      24.0
+     ],
+     "volumeMm3": 958.971,
+     "holes": {
+      "13.0": 1
+     }
+    }
+   },
+   "iterations": 3,
+   "wallSec": 412.8,
+   "tokens": {
+    "input": 75138,
+    "output": 5869,
+    "cacheRead": 0,
+    "cacheWrite": 0
+   },
+   "lockedChecks": {
+    "passed": 11,
+    "total": 11
+   },
+   "failedLocked": [],
+   "visualReview": [
+    {
+     "matches": true,
+     "issues": []
+    }
+   ],
+   "validationSpec": {
+    "requireValidShape": true,
+    "requireSolid": true,
+    "expectedBoundingBoxMm": [
+     24,
+     24,
+     3
+    ],
+    "toleranceMm": 0.01,
+    "expectedVolumeMm3": 958.96,
+    "volumeTolerancePct": 1,
+    "expectedSolidCount": 1,
+    "holes": [
+     {
+      "diameterMm": 13,
+      "centersMm": [
+       [
+        12,
+        12
+       ]
+      ],
+      "axis": "z",
+      "reference": "bboxMin",
+      "through": true
+     }
+    ],
+    "expectedHoleCount": 1
+   },
+   "jobId": "job_eq7ost6nPgeYbyB5fkqH8w",
+   "error": null,
+   "events": [
+    "[spec] deriving acceptance spec from the request",
+    "[spec] locked spec: {\"requireValidShape\":true,\"requireSolid\":true,\"expectedBoundingBoxMm\":[24,24,3],\"toleranceMm\":0.01,\"expectedVolumeMm3\":958.96,\"volumeTolerancePct\":1,\"expectedSolidCount\":1,\"holes\":[{\"diameterMm\":13,\"centersMm\":[[12,12]],\"axis\":\"z\",\"referenc",
+    "[build] building against the locked spec",
+    "[build] iteration 1: submitted job_5BVWQdFzztin6-04GpuZpQ",
+    "[build] iteration 2: no job (program returned without submitting a job)",
+    "[build] iteration 3: submitted job_eq7ost6nPgeYbyB5fkqH8w",
+    "[review] visual review of job_eq7ost6nPgeYbyB5fkqH8w",
+    "[done] succeeded in 412064 ms, $0"
+   ]
+  },
+  {
+   "id": "open_box",
+   "agentStatus": "succeeded",
+   "pass": true,
+   "grade": {
+    "pass": true,
+    "checks": {
+     "validSolid": true,
+     "bbox": true,
+     "volume": true,
+     "holes": true
+    },
+    "measured": {
+     "bboxSorted": [
+      30.0,
+      40.0,
+      60.0
+     ],
+     "volumeMm3": 34500.0,
+     "holes": {}
+    }
+   },
+   "iterations": 3,
+   "wallSec": 489.6,
+   "tokens": {
+    "input": 38121,
+    "output": 7644,
+    "cacheRead": 0,
+    "cacheWrite": 0
+   },
+   "lockedChecks": {
+    "passed": 9,
+    "total": 9
+   },
+   "failedLocked": [],
+   "visualReview": [
+    {
+     "matches": true,
+     "issues": []
+    }
+   ],
+   "validationSpec": {
+    "requireValidShape": true,
+    "requireSolid": true,
+    "expectedBoundingBoxMm": [
+     60,
+     40,
+     30
+    ],
+    "toleranceMm": 0.01,
+    "expectedVolumeMm3": 34500,
+    "volumeTolerancePct": 1,
+    "expectedSolidCount": 1
+   },
+   "jobId": "job_F3dzUxoWaRjRsEscSLZf0A",
+   "error": null,
+   "events": [
+    "[spec] deriving acceptance spec from the request",
+    "[spec] locked spec: {\"requireValidShape\":true,\"requireSolid\":true,\"expectedBoundingBoxMm\":[60,40,30],\"toleranceMm\":0.01,\"expectedVolumeMm3\":34500,\"volumeTolerancePct\":1,\"expectedSolidCount\":1}",
+    "[build] building against the locked spec",
+    "[build] iteration 1: no job (program returned without submitting a job)",
+    "[build] iteration 2: submitted job_sj2YN9EQA4Bcjky_38BpsA",
+    "[build] iteration 3: submitted job_F3dzUxoWaRjRsEscSLZf0A",
+    "[review] visual review of job_F3dzUxoWaRjRsEscSLZf0A",
+    "[done] succeeded in 488894 ms, $0"
+   ]
+  },
+  {
+   "id": "hub_with_tapped_holes",
+   "agentStatus": "cancelled",
+   "pass": false,
+   "grade": {
+    "pass": false,
+    "checks": {
+     "artifact": false
+    }
+   },
+   "iterations": 1,
+   "wallSec": 900.7,
+   "tokens": {
+    "input": 17865,
+    "output": 12140,
+    "cacheRead": 0,
+    "cacheWrite": 0
+   },
+   "lockedChecks": null,
+   "failedLocked": [],
+   "visualReview": null,
+   "validationSpec": {
+    "requireValidShape": true,
+    "requireSolid": true,
+    "expectedBoundingBoxMm": [
+     40,
+     40,
+     20
+    ],
+    "toleranceMm": 0.01,
+    "expectedVolumeMm3": 21382.936,
+    "volumeTolerancePct": 0.1,
+    "expectedSolidCount": 1,
+    "holes": [
+     {
+      "diameterMm": 10,
+      "centersMm": [
+       [
+        20,
+        20
+       ]
+      ],
+      "axis": "z",
+      "reference": "bboxMin",
+      "through": true
+     },
+     {
+      "diameterMm": 6.8,
+      "centersMm": [
+       [
+        34,
+        20
+       ],
+       [
+        20,
+        34
+       ],
+       [
+        6,
+        20
+       ],
+       [
+        20,
+        6
+       ]
+      ],
+      "axis": "z",
+      "reference": "bboxMin",
+      "through": false
+     }
+    ],
+    "expectedHoleCount": 5
+   },
+   "jobId": "job_1RNXhN5BeposMxoZMtAmrw",
+   "error": {
+    "code": "CANCELLED",
+    "message": "design cancelled",
+    "hint": "The job was cancelled."
+   },
+   "events": [
+    "[spec] deriving acceptance spec from the request",
+    "[spec] locked spec: {\"requireValidShape\":true,\"requireSolid\":true,\"expectedBoundingBoxMm\":[40,40,20],\"toleranceMm\":0.01,\"expectedVolumeMm3\":21382.936,\"volumeTolerancePct\":0.1,\"expectedSolidCount\":1,\"holes\":[{\"diameterMm\":10,\"centersMm\":[[20,20]],\"axis\":\"z\",\"re",
+    "[build] building against the locked spec",
+    "[build] iteration 1: submitted job_1RNXhN5BeposMxoZMtAmrw",
+    "[done] cancelled in 900006 ms, $0"
+   ]
+  },
+  {
+   "id": "hex_standoff",
+   "agentStatus": "cancelled",
+   "pass": false,
+   "grade": {
+    "pass": false,
+    "checks": {
+     "artifact": false
+    }
+   },
+   "iterations": 0,
+   "wallSec": 900.8,
+   "tokens": {
+    "input": 644,
+    "output": 5700,
+    "cacheRead": 0,
+    "cacheWrite": 0
+   },
+   "lockedChecks": null,
+   "failedLocked": [],
+   "visualReview": null,
+   "validationSpec": {
+    "requireValidShape": true,
+    "requireSolid": true,
+    "expectedBoundingBoxMm": [
+     11.547,
+     10,
+     20
+    ],
+    "toleranceMm": 0.01,
+    "expectedVolumeMm3": 1454.962,
+    "volumeTolerancePct": 1,
+    "expectedSolidCount": 1,
+    "holes": [
+     {
+      "diameterMm": 4.2,
+      "centersMm": [
+       [
+        5.7735,
+        5
+       ]
+      ],
+      "axis": "z",
+      "reference": "bboxMin",
+      "through": true
+     }
+    ],
+    "expectedHoleCount": 1
+   },
+   "jobId": null,
+   "error": {
+    "code": "CANCELLED",
+    "message": "design cancelled",
+    "hint": "The job was cancelled."
+   },
+   "events": [
+    "[spec] deriving acceptance spec from the request",
+    "[spec] locked spec: {\"requireValidShape\":true,\"requireSolid\":true,\"expectedBoundingBoxMm\":[11.547,10,20],\"toleranceMm\":0.01,\"expectedVolumeMm3\":1454.962,\"volumeTolerancePct\":1,\"expectedSolidCount\":1,\"holes\":[{\"diameterMm\":4.2,\"centersMm\":[[5.7735,5]],\"axis\":\"z",
+    "[build] building against the locked spec",
+    "[done] cancelled in 900008 ms, $0"
+   ]
+  }
+ ]
+}

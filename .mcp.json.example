@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "robust-freecad": {
+      "command": "<HOME>/micromamba/envs/freecad-mcp/bin/node",
+      "args": [
+        "<repo>/dist/apps/mcp-server/src/server.js"
+      ],
+      "env": {
+        "FREECAD_MCP_PYTHON": "<HOME>/micromamba/envs/freecad-mcp/bin/python",
+        "FREECAD_MCP_DATA_DIR": "<repo>/data"
+      }
+    }
+  }
+}

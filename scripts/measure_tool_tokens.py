@@ -26,7 +26,7 @@ UVX = os.environ.get("UVX", str(Path.home() / ".local" / "bin" / "uvx"))
 
 SERVERS = {
     # name: (command, args, notes)
-    "freecad-codemode-mcp (ours)": (str(ENV_BIN / "node"), [str(ROOT / "dist/apps/mcp-server/src/server.js")], "this repo"),
+    "robust-freecad-mcp (ours)": (str(ENV_BIN / "node"), [str(ROOT / "dist/apps/mcp-server/src/server.js")], "this repo"),
     "neka-nat/freecad-mcp": (UVX, ["freecad-mcp"], "PyPI freecad-mcp"),
     "spkane/freecad-robust-mcp": (UVX, ["--from", "freecad-robust-mcp", "freecad-mcp"], "PyPI freecad-robust-mcp"),
     "dcc-mcp/dcc-mcp-freecad": (UVX, ["dcc-mcp-freecad"], "PyPI dcc-mcp-freecad"),

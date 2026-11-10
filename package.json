@@ -1,14 +1,14 @@
 {
-  "name": "freecad-codemode-mcp",
+  "name": "robust-freecad-mcp",
   "version": "0.1.0",
   "private": true,
-  "description": "Code Mode MCP server for FreeCAD: discover, orchestrate, execute, validate and export CAD models",
+  "description": "Production-grade FreeCAD MCP server: precision-verified by measurement, token-efficient via Code Mode",
   "type": "module",
   "engines": {
     "node": ">=22.13"
   },
   "bin": {
-    "freecad-codemode-mcp": "dist/apps/mcp-server/src/server.js",
+    "robust-freecad-mcp": "dist/apps/mcp-server/src/server.js",
     "freecad-design": "dist/apps/design-agent/src/cli.js"
   },
   "scripts": {

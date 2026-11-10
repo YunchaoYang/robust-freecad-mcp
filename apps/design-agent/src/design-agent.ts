@@ -34,7 +34,8 @@ import { CadToolError, toStructuredError } from "../../../packages/shared/errors
 import { ValidationSpecSchema, type CadJobResult, type ValidationSpec } from "../../../packages/shared/types.js";
 import type { CadGateway } from "../../cad-gateway/src/gateway.js";
 import { BRIDGE_DOC, compact, createBridge, type BridgeMethod, type CompactResult } from "../../code-runtime/src/cad-bridge.js";
-import { searchCatalog } from "../../code-runtime/src/catalog-view.js";
+import { getCatalogEntry, searchCatalog } from "../../code-runtime/src/catalog-view.js";
+import { resolveLimits } from "../../code-runtime/src/limits.js";
 import { runCodeMode } from "../../code-runtime/src/sandbox.js";
 import { attachPreviews } from "../../mcp-server/src/tools/previews.js";
 
@@ -48,14 +49,24 @@ export interface DesignModel {
   thinkingLevel?: DesignThinking;
 }
 
+/**
+ * codemode: builder writes JS programs against the `cad` bridge (exampleId/fromJob/patch, compact results).
+ * classic:  ablation baseline - conventional tool calling: fetch full example source, submit full scripts,
+ *           read full results; one tool call per step. Same locked spec, review and budgets.
+ */
+export type ToolMode = "codemode" | "classic";
+
 export interface DesignOptions {
   maxIterations: number;
   budgetUsd: number;
   visualCheck: boolean;
   wallTimeMs: number;
+  toolMode: ToolMode;
 }
 
-export const DEFAULT_DESIGN_OPTIONS: DesignOptions = { maxIterations: 4, budgetUsd: 1, visualCheck: true, wallTimeMs: 15 * 60_000 };
+export const DEFAULT_DESIGN_OPTIONS: DesignOptions = { maxIterations: 4, budgetUsd: 1, visualCheck: true, wallTimeMs: 15 * 60_000, toolMode: "codemode" };
+
+type Stage = "spec" | "build" | "review";
 
 export type DesignStatus = "running" | "succeeded" | "failed" | "budget_exhausted" | "cancelled";
 
@@ -76,6 +87,11 @@ export interface DesignRecord {
   result?: CompactResult;
   visualReview?: { matches: boolean; issues: string[] }[];
   iterations: number;
+  toolMode?: ToolMode;
+  /** Model round trips (assistant messages) per stage. */
+  modelCalls?: Record<Stage, number>;
+  /** Wall time per stage. */
+  stageMs?: Record<Stage, number>;
   costUsd: number;
   tokens: { input: number; output: number; cacheRead: number; cacheWrite: number };
   durationMs: number;
@@ -119,7 +135,8 @@ export async function localDesignModel(baseUrl: string, id?: string): Promise<De
         input: vision ? ["text", "image"] : ["text"],
         reasoning: true,
         contextWindow: contextWindow || 32_768,
-        maxTokens: Math.min(16_384, Math.floor((contextWindow || 32_768) / 4)),
+        // Bound single generations: a 16k-token reply takes >10 min on a local GPU and stalled eval runs.
+        maxTokens: Number(process.env.FREECAD_MCP_DESIGN_MAX_TOKENS ?? 0) || Math.min(8_192, Math.floor((contextWindow || 32_768) / 4)),
         cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
         compat: { supportsReasoningEffort: false, ...(thinkingFormat ? { thinkingFormat } : {}) },
       },
@@ -181,6 +198,29 @@ At most ${maxIterations} cad_execute calls. Build parametric models (spreadsheet
 ${BRIDGE_DOC}`;
 }
 
+const VALIDATION_TYPE = /type Validation = [\s\S]*?\};/.exec(BRIDGE_DOC)?.[0] ?? "";
+
+export function classicSystemPrompt(maxIterations: number): string {
+  return `You are a CAD engineer driving a headless FreeCAD 1.1 server with these tools:
+  cad_search(query, kind?)            - find catalog examples/APIs (prefer cadkit examples)
+  cad_example(id)                     - full catalog entry including the example script source
+  cad_submit(script, outputs?, parameters?) - submit a complete FreeCAD Python script as a job; returns {id, status}
+  cad_status(id)                      - wait for the job and return its full result (geometry, all checks, artifacts, error, render image)
+
+Script contract: Python with App/FreeCAD, Part, Sketcher, params (dict of parameters) and cadkit pre-bound. The script must set
+\`doc\` (App.newDocument(...)) and \`result_obj\` (final object with .Shape, e.g. a PartDesign Body). Runs headless (no FreeCADGui).
+
+Workflow:
+1. Search, fetch an example if useful, then submit a complete script with outputs ['FCStd','STEP','PNG'].
+2. The server overlays a LOCKED acceptance spec on every job; you cannot remove its checks. Make the part satisfy it.
+3. Call cad_status(id). If not completed, read the failed checks (expected vs actual) or the traceback, fix the script and submit the full corrected script again.
+4. When a job completes, answer with one line: DONE <jobId>.
+At most ${maxIterations} cad_submit calls. Build parametric models (spreadsheet/cadkit parameters, constrained sketches). Never ask the user questions.
+
+Acceptance spec fields (for reading results):
+${VALIDATION_TYPE}`;
+}
+
 export const REVIEW_SYSTEM_PROMPT = `You inspect a 4-view CAD render (iso, top, front, right; dimensions annotated) against a part request.
 Judge only what is visible: overall shape, feature counts and placement, through vs blind, proportions. Ignore colour and styling.
 Reply with exactly one \`\`\`json block: {"matches": true|false, "issues": ["...", ...]} (issues empty when matches).`;
@@ -231,7 +271,7 @@ export class DesignAgent {
     this.record.events.push({ ts: new Date().toISOString(), stage, message: message.slice(0, 300) });
   }
 
-  private async newSession(systemPrompt: string, tools: ToolDefinition[]): Promise<AgentSession> {
+  private async newSession(systemPrompt: string, tools: ToolDefinition[], stage: Stage): Promise<AgentSession> {
     const resourceLoader = new DefaultResourceLoader({
       cwd: this.workDir,
       agentDir: getAgentDir(),
@@ -259,6 +299,8 @@ export class DesignAgent {
     });
     session.subscribe((ev) => {
       if (ev.type !== "message_end" || ev.message.role !== "assistant") return;
+      const mc = (this.record.modelCalls ??= { spec: 0, build: 0, review: 0 });
+      mc[stage]++;
       const u = ev.message.usage;
       if (!u) return;
       this.record.tokens.input += u.input ?? 0;
@@ -282,7 +324,7 @@ export class DesignAgent {
   // ---- stage 1
   private async specify(): Promise<void> {
     this.event("spec", "deriving acceptance spec from the request");
-    const s = await this.newSession(SPEC_SYSTEM_PROMPT, []);
+    const s = await this.newSession(SPEC_SYSTEM_PROMPT, [], "spec");
     let text = await this.ask(s, `Part request:\n${this.record.request}`);
     for (let attempt = 0; ; attempt++) {
       try {
@@ -330,6 +372,10 @@ export class DesignAgent {
         const out = await runCodeMode(p.code, bridge, { principal: this.principal, limits: { wallTimeMs: 300_000 } });
         void signal;
         for (const id of out.stats.submittedJobs) this.event("build", `iteration ${this.record.iterations}: submitted ${id}`);
+        if (!out.stats.submittedJobs.length) {
+          const why = out.ok ? "program returned without submitting a job" : `${out.error?.code}: ${out.error?.message ?? ""}`;
+          this.event("build", `iteration ${this.record.iterations}: no job (${why})`);
+        }
         if (!out.ok) {
           return { content: [{ type: "text", text: JSON.stringify({ ok: false, error: out.error, logs: out.logs }) }], details: {}, isError: true };
         }
@@ -338,6 +384,85 @@ export class DesignAgent {
       },
     });
     return [searchTool, execTool] as ToolDefinition[];
+  }
+
+  // ---- stage 2 tools, ablation baseline: conventional one-call-per-step tools
+  private classicTools(): ToolDefinition[] {
+    const bridge = lockedBridge(createBridge(this.gw), this.record.validationSpec!);
+    const ctx = {
+      principal: this.principal,
+      remainingMs: () => 300_000,
+      signal: new AbortController().signal,
+      limits: resolveLimits({ maxSubmits: 1000 }),
+      counters: { submits: 0 },
+      submittedJobs: [] as string[],
+    };
+    const text = (v: unknown) => ({ type: "text" as const, text: JSON.stringify(v) });
+    const searchTool = defineTool({
+      name: "cad_search",
+      label: "CAD catalog search",
+      description: "Search the FreeCAD catalog (examples, API, pitfalls). Returns compact hits with ids.",
+      parameters: Type.Object({ query: Type.String(), kind: Type.Optional(Type.String()) }),
+      execute: async (_id, p) => ({ content: [text({ results: searchCatalog(this.gw.catalog, { query: p.query, kind: p.kind, limit: 5 }).results })], details: {} }),
+    });
+    const exampleTool = defineTool({
+      name: "cad_example",
+      label: "CAD example",
+      description: "Fetch one catalog entry in full, including its example script source.",
+      parameters: Type.Object({ id: Type.String() }),
+      execute: async (_id, p) => {
+        try {
+          return { content: [text(getCatalogEntry(this.gw.catalog, p.id))], details: {} };
+        } catch (e) {
+          return { content: [text({ error: toStructuredError(e) })], details: {}, isError: true };
+        }
+      },
+    });
+    const submitTool = defineTool({
+      name: "cad_submit",
+      label: "CAD submit",
+      description: "Submit a complete FreeCAD Python script as a job. Returns {id, status}. Use cad_status to get the result.",
+      parameters: Type.Object({
+        script: Type.String(),
+        outputs: Type.Optional(Type.Array(Type.String())),
+        parameters: Type.Optional(Type.Record(Type.String(), Type.Union([Type.Number(), Type.String(), Type.Boolean()]))),
+      }),
+      execute: async (_id, p) => {
+        if (this.record.iterations >= this.opts.maxIterations) {
+          return { content: [{ type: "text", text: `Submission budget (${this.opts.maxIterations}) exhausted. Stop and reply DONE <bestJobId> or FAILED <reason>.` }], details: {}, isError: true };
+        }
+        this.record.iterations++;
+        try {
+          const r = (await bridge.submit({ script: p.script, outputs: p.outputs, parameters: p.parameters }, ctx)) as { id: string };
+          this.event("build", `iteration ${this.record.iterations}: submitted ${r.id}`);
+          return { content: [text(r)], details: {} };
+        } catch (e) {
+          this.event("build", `iteration ${this.record.iterations}: no job (${toStructuredError(e).code})`);
+          return { content: [text({ error: toStructuredError(e) })], details: {}, isError: true };
+        }
+      },
+    });
+    const statusTool = defineTool({
+      name: "cad_status",
+      label: "CAD status",
+      description: "Wait for a job to finish and return its full result (geometry, every check, artifacts, error) plus its render.",
+      parameters: Type.Object({ id: Type.String() }),
+      execute: async (_id, p) => {
+        try {
+          const r = await this.gw.wait(this.principal, p.id, 300_000);
+          const content: ({ type: "text"; text: string } | { type: "image"; data: string; mimeType: string })[] = [text(r)];
+          const png = r.artifacts?.find((a) => a.format === "PNG");
+          if (png) {
+            const { file } = this.gw.artifactFile(this.principal, r.id, png.artifactId);
+            content.push({ type: "image", data: fs.readFileSync(file).toString("base64"), mimeType: "image/png" });
+          }
+          return { content, details: {} };
+        } catch (e) {
+          return { content: [text({ error: toStructuredError(e) })], details: {}, isError: true };
+        }
+      },
+    });
+    return [searchTool, exampleTool, submitTool, statusTool] as ToolDefinition[];
   }
 
   /** Best job: the most recent completed job (all locked checks passed), else the most recent job. */
@@ -353,7 +478,7 @@ export class DesignAgent {
     if (!png) return undefined;
     const { file } = this.gw.artifactFile(this.principal, job.id, png.artifactId);
     const image = { type: "image" as const, data: fs.readFileSync(file).toString("base64"), mimeType: "image/png" };
-    const s = await this.newSession(REVIEW_SYSTEM_PROMPT, []);
+    const s = await this.newSession(REVIEW_SYSTEM_PROMPT, [], "review");
     const text = await this.ask(s, `Part request:\n${this.record.request}\n\nDesigner notes: ${this.record.specNotes ?? "-"}`, [image]);
     try {
       const r = extractJson(text) as { matches?: unknown; issues?: unknown };
@@ -366,25 +491,45 @@ export class DesignAgent {
   async run(): Promise<void> {
     const t0 = Date.now();
     const timer = setTimeout(() => this.abort("cancelled"), this.opts.wallTimeMs);
+    const classic = this.opts.toolMode === "classic";
+    this.record.toolMode = this.opts.toolMode;
+    const stageMs = (this.record.stageMs = { spec: 0, build: 0, review: 0 });
+    const timed = async <T>(stage: Stage, fn: () => Promise<T>): Promise<T> => {
+      const s0 = Date.now();
+      try {
+        return await fn();
+      } finally {
+        stageMs[stage] += Date.now() - s0;
+      }
+    };
     try {
-      await this.specify();
-      this.event("build", "building against the locked spec");
-      const builder = await this.newSession(buildSystemPrompt(this.opts.maxIterations), this.tools());
-      let reply = await this.ask(
-        builder,
-        `Part request:\n${this.record.request}\n\nLocked acceptance spec (overlaid on every job):\n${JSON.stringify(this.record.validationSpec)}\n\nSpec notes: ${this.record.specNotes ?? "-"}`,
+      await timed("spec", () => this.specify());
+      this.event("build", `building against the locked spec (${this.opts.toolMode})`);
+      const builder = await this.newSession(
+        classic ? classicSystemPrompt(this.opts.maxIterations) : buildSystemPrompt(this.opts.maxIterations),
+        classic ? this.classicTools() : this.tools(),
+        "build",
+      );
+      let reply = await timed("build", () =>
+        this.ask(
+          builder,
+          `Part request:\n${this.record.request}\n\nLocked acceptance spec (overlaid on every job):\n${JSON.stringify(this.record.validationSpec)}\n\nSpec notes: ${this.record.specNotes ?? "-"}`,
+        ),
       );
       let job = this.pickJob();
       for (let round = 0; this.opts.visualCheck && job?.status === "completed" && round < 2; round++) {
         this.event("review", `visual review of ${job.id}`);
-        const verdict = await this.review(job);
+        const reviewed = job;
+        const verdict = await timed("review", () => this.review(reviewed));
         if (!verdict) break;
         (this.record.visualReview ??= []).push(verdict);
         if (verdict.matches || this.record.iterations >= this.opts.maxIterations) break;
         this.event("review", `mismatch: ${verdict.issues.join("; ")}`);
-        reply = await this.ask(
-          builder,
-          `A reviewer looked at the render of ${job.id} and found: ${verdict.issues.join("; ")}. Fix these with cad.run({ fromJob: '${job.id}', ... }) and reply DONE <jobId>.`,
+        const fix = classic
+          ? `submit a corrected full script with cad_submit, check it with cad_status`
+          : `cad.run({ fromJob: '${job.id}', ... })`;
+        reply = await timed("build", () =>
+          this.ask(builder, `A reviewer looked at the render of ${reviewed.id} and found: ${verdict.issues.join("; ")}. Fix these with ${fix} and reply DONE <jobId>.`),
         );
         job = this.pickJob();
       }

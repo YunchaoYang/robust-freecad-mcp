@@ -75,6 +75,12 @@ def run_build(spec: dict, script: str, out_dir: str) -> dict:
         "cadkit": cadkit,
     }
     builtins.__cadkit_params__ = dict(request.get("parameters") or {})
+    # FreeCAD's GUI convention is `import App` / `import FreeCAD as App`. In a headless env an
+    # unrelated module named `App` can shadow the pre-bound global, so make `import App`
+    # resolve to FreeCAD itself (seen in evals: "module 'App' has no attribute 'newDocument'").
+    import sys
+
+    sys.modules["App"] = App
     try:
         code = compile(script, SCRIPT_FILENAME, "exec")
     except SyntaxError as exc:

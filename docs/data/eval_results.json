@@ -57,7 +57,7 @@
     "cacheRead": 82013,
     "cacheWrite": 14909
    },
-   "finalText": "mm\u00b3 to within the expected rounding.\n- It is a single valid solid, and the checks found all 7 holes at the correct diameters and positions.\n- The preview render shows the expected layout.\n\n**Published files:**\n- **STEP:** `model.step` (14.1 KB), at `freecad-artifact://job_IH547PKaTnptkHnSKdzZCw/art__9buw7QLBSJ7KjPO`, local copy at `file:///home/yangy78/work/freeCAD/freecad-codemode-mcp/data/jobs/job_IH547PKaTnptkHnSKdzZCw/artifacts/model.step`\n- **FreeCAD file:** artifact `art_skC-hGiTX2DSa80T`\n- **Preview image (PNG):** artifact `art_nOEut66RGBHiKN5o`\n\nFINAL_JOB_ID: job_IH547PKaTnptkHnSKdzZCw",
+   "finalText": "mm\u00b3 to within the expected rounding.\n- It is a single valid solid, and the checks found all 7 holes at the correct diameters and positions.\n- The preview render shows the expected layout.\n\n**Published files:**\n- **STEP:** `model.step` (14.1 KB), at `freecad-artifact://job_IH547PKaTnptkHnSKdzZCw/art__9buw7QLBSJ7KjPO`, local copy at `<repo>/data/jobs/job_IH547PKaTnptkHnSKdzZCw/artifacts/model.step`\n- **FreeCAD file:** artifact `art_skC-hGiTX2DSa80T`\n- **Preview image (PNG):** artifact `art_nOEut66RGBHiKN5o`\n\nFINAL_JOB_ID: job_IH547PKaTnptkHnSKdzZCw",
    "grade": {
     "pass": true,
     "checks": {
@@ -93,7 +93,7 @@
     "cacheRead": 80070,
     "cacheWrite": 13003
    },
-   "finalText": "ch leg is 40 mm long on the outside and 5 mm thick.\n- Overall size is 40 \u00d7 30 \u00d7 40 mm (X \u00d7 Y \u00d7 Z), as expected.\n- Volume is 11,250 mm\u00b3: (40\u00d75 + 35\u00d75) \u00d7 30.\n- The shape is valid and is one solid.\n\n**Files:**\n- **STEP:** `model.step` (9,275 bytes, sha256 `6360e1e9\u2026c4e175`)\n  - Resource: `freecad-artifact://job_87Vk3RaGGjxGjn2UCtoYmg/art_CpQW2VzotuMobh8Y`\n  - Local: `/home/yangy78/work/freeCAD/freecad-codemode-mcp/data/jobs/job_87Vk3RaGGjxGjn2UCtoYmg/artifacts/model.step`\n- **FreeCAD file:** I also saved an FCStd version (artifact `art_wuC2TxiDbcvCb_ML`).\n\nFINAL_JOB_ID: job_87Vk3RaGGjxGjn2UCtoYmg",
+   "finalText": "ch leg is 40 mm long on the outside and 5 mm thick.\n- Overall size is 40 \u00d7 30 \u00d7 40 mm (X \u00d7 Y \u00d7 Z), as expected.\n- Volume is 11,250 mm\u00b3: (40\u00d75 + 35\u00d75) \u00d7 30.\n- The shape is valid and is one solid.\n\n**Files:**\n- **STEP:** `model.step` (9,275 bytes, sha256 `6360e1e9\u2026c4e175`)\n  - Resource: `freecad-artifact://job_87Vk3RaGGjxGjn2UCtoYmg/art_CpQW2VzotuMobh8Y`\n  - Local: `<repo>/data/jobs/job_87Vk3RaGGjxGjn2UCtoYmg/artifacts/model.step`\n- **FreeCAD file:** I also saved an FCStd version (artifact `art_wuC2TxiDbcvCb_ML`).\n\nFINAL_JOB_ID: job_87Vk3RaGGjxGjn2UCtoYmg",
    "grade": {
     "pass": true,
     "checks": {
@@ -126,7 +126,7 @@
     "cacheRead": 79993,
     "cacheWrite": 12911
    },
-   "finalText": "0.\n- **Second section:** 12 mm diameter, 40 mm long, from z = 30 to 70, on the same axis as the first.\n- **Result:** one solid with no chamfers. The two cylinders were merged into one piece.\n- **Overall size:** 20 \u00d7 20 \u00d7 70 mm.\n- **Volume:** 13,948.67 mm\u00b3, which matches the expected 4440\u03c0 mm\u00b3.\n\n**Artifacts:**\n- **STEP:** `freecad-artifact://job_u-umzEDd2fCnzq3ehGgCNA/art_ioRpd1hY3NmxXJU4`\n  Local file: `/home/yangy78/work/freeCAD/freecad-codemode-mcp/data/jobs/job_u-umzEDd2fCnzq3ehGgCNA/artifacts/model.step`\n- **FCStd:** artifact `art_eNwJe9srx65_OKBd`\n\nFINAL_JOB_ID: job_u-umzEDd2fCnzq3ehGgCNA",
+   "finalText": "0.\n- **Second section:** 12 mm diameter, 40 mm long, from z = 30 to 70, on the same axis as the first.\n- **Result:** one solid with no chamfers. The two cylinders were merged into one piece.\n- **Overall size:** 20 \u00d7 20 \u00d7 70 mm.\n- **Volume:** 13,948.67 mm\u00b3, which matches the expected 4440\u03c0 mm\u00b3.\n\n**Artifacts:**\n- **STEP:** `freecad-artifact://job_u-umzEDd2fCnzq3ehGgCNA/art_ioRpd1hY3NmxXJU4`\n  Local file: `<repo>/data/jobs/job_u-umzEDd2fCnzq3ehGgCNA/artifacts/model.step`\n- **FCStd:** artifact `art_eNwJe9srx65_OKBd`\n\nFINAL_JOB_ID: job_u-umzEDd2fCnzq3ehGgCNA",
    "grade": {
     "pass": true,
     "checks": {
@@ -159,7 +159,7 @@
     "cacheRead": 79865,
     "cacheWrite": 13264
    },
-   "finalText": "diameter 13 mm, thickness 3 mm.\n- The measured bounding box is 24 \u00d7 24 \u00d7 3 mm.\n- The volume is 958.97 mm\u00b3, which matches the expected \u03c0/4\u00b7(24\u00b2\u221213\u00b2)\u00b73.\n- It is one valid solid.\n\n**Files**\n- **STEP:** `model.step` (4,949 bytes)\n  - Resource: `freecad-artifact://job_KFwc57oOL3yuO9C6ppraMw/art_D0oKjnr08gy4lQxq`\n  - Local: `/home/yangy78/work/freeCAD/freecad-codemode-mcp/data/jobs/job_KFwc57oOL3yuO9C6ppraMw/artifacts/model.step`\n- **FreeCAD file:** `model.FCStd` (2,103 bytes)\n  - Resource: `freecad-artifact://job_KFwc57oOL3yuO9C6ppraMw/art_cKFxusewm5XkE3pD`\n\nFINAL_JOB_ID: job_KFwc57oOL3yuO9C6ppraMw",
+   "finalText": "diameter 13 mm, thickness 3 mm.\n- The measured bounding box is 24 \u00d7 24 \u00d7 3 mm.\n- The volume is 958.97 mm\u00b3, which matches the expected \u03c0/4\u00b7(24\u00b2\u221213\u00b2)\u00b73.\n- It is one valid solid.\n\n**Files**\n- **STEP:** `model.step` (4,949 bytes)\n  - Resource: `freecad-artifact://job_KFwc57oOL3yuO9C6ppraMw/art_D0oKjnr08gy4lQxq`\n  - Local: `<repo>/data/jobs/job_KFwc57oOL3yuO9C6ppraMw/artifacts/model.step`\n- **FreeCAD file:** `model.FCStd` (2,103 bytes)\n  - Resource: `freecad-artifact://job_KFwc57oOL3yuO9C6ppraMw/art_cKFxusewm5XkE3pD`\n\nFINAL_JOB_ID: job_KFwc57oOL3yuO9C6ppraMw",
    "grade": {
     "pass": true,
     "checks": {
@@ -194,7 +194,7 @@
     "cacheRead": 79894,
     "cacheWrite": 12824
    },
-   "finalText": " on all four sides, a 5 mm floor and sharp corners.\n\n**Checks on the result:**\n- **Outside size:** exactly 60 \u00d7 40 \u00d7 30 mm.\n- **Volume:** 34,500 mm\u00b3, which is the expected 72,000 mm\u00b3 box minus the 37,500 mm\u00b3 cavity.\n- **Solid:** a single valid solid.\n\n**Files:**\n- **STEP:** `model.step` (11,957 bytes), at `freecad-artifact://job_sZZc_T6yZpKymlLGug6Yhg/art_0bVjXnnGjdMoMOw3`, or locally at `/home/yangy78/work/freeCAD/freecad-codemode-mcp/data/jobs/job_sZZc_T6yZpKymlLGug6Yhg/artifacts/model.step`\n- **FreeCAD file (FCStd):** artifact `art_Log8r4xYE4Lp0KVX`\n\nFINAL_JOB_ID: job_sZZc_T6yZpKymlLGug6Yhg",
+   "finalText": " on all four sides, a 5 mm floor and sharp corners.\n\n**Checks on the result:**\n- **Outside size:** exactly 60 \u00d7 40 \u00d7 30 mm.\n- **Volume:** 34,500 mm\u00b3, which is the expected 72,000 mm\u00b3 box minus the 37,500 mm\u00b3 cavity.\n- **Solid:** a single valid solid.\n\n**Files:**\n- **STEP:** `model.step` (11,957 bytes), at `freecad-artifact://job_sZZc_T6yZpKymlLGug6Yhg/art_0bVjXnnGjdMoMOw3`, or locally at `<repo>/data/jobs/job_sZZc_T6yZpKymlLGug6Yhg/artifacts/model.step`\n- **FreeCAD file (FCStd):** artifact `art_Log8r4xYE4Lp0KVX`\n\nFINAL_JOB_ID: job_sZZc_T6yZpKymlLGug6Yhg",
    "grade": {
     "pass": true,
     "checks": {
@@ -227,7 +227,7 @@
     "cacheRead": 82188,
     "cacheWrite": 15050
    },
-   "finalText": "lation.\n- **Hole check:** the bore was confirmed as a through hole and the four 6.8 mm holes as blind holes, all at the intended positions.\n\n**Files from the job:**\n- STEP: `art_Bf_iQOGt5cPOHPc-` (`model.step`, 11.9 KB, sha256 `deede63e\u2026927c`)\n  - Resource: `freecad-artifact://job_JE5oDSfiGVRAzKV3WyVJ0Q/art_Bf_iQOGt5cPOHPc-`\n  - Local file: `/home/yangy78/work/freeCAD/freecad-codemode-mcp/data/jobs/job_JE5oDSfiGVRAzKV3WyVJ0Q/artifacts/model.step`\n- The job also produced a FreeCAD file (`art__6qOCQmtuIslkoJy`) and a PNG preview (`art_K8KHMcJzHODF36u3`).\n\nFINAL_JOB_ID: job_JE5oDSfiGVRAzKV3WyVJ0Q",
+   "finalText": "lation.\n- **Hole check:** the bore was confirmed as a through hole and the four 6.8 mm holes as blind holes, all at the intended positions.\n\n**Files from the job:**\n- STEP: `art_Bf_iQOGt5cPOHPc-` (`model.step`, 11.9 KB, sha256 `deede63e\u2026927c`)\n  - Resource: `freecad-artifact://job_JE5oDSfiGVRAzKV3WyVJ0Q/art_Bf_iQOGt5cPOHPc-`\n  - Local file: `<repo>/data/jobs/job_JE5oDSfiGVRAzKV3WyVJ0Q/artifacts/model.step`\n- The job also produced a FreeCAD file (`art__6qOCQmtuIslkoJy`) and a PNG preview (`art_K8KHMcJzHODF36u3`).\n\nFINAL_JOB_ID: job_JE5oDSfiGVRAzKV3WyVJ0Q",
    "grade": {
     "pass": true,
     "checks": {
@@ -263,7 +263,7 @@
     "cacheRead": 80249,
     "cacheWrite": 13178
    },
-   "finalText": " mm long along Z.\n- One 4.2 mm through hole on the centre axis. 4.2 mm is the standard tap drill for M5\u00d70.8 coarse thread.\n- One valid solid. Volume is 1454.96 mm\u00b3, which matches the hand calculation.\n\n**Artifacts:**\n- **STEP:** `model.step` (11.7 KB)\n  - Resource: `freecad-artifact://job_egBqIEIedLmB0hUagIqONw/art_vAkTLhxFEdWdtpK1`\n  - File: `file:///home/yangy78/work/freeCAD/freecad-codemode-mcp/data/jobs/job_egBqIEIedLmB0hUagIqONw/artifacts/model.step`\n  - sha256 `bb1350d0\u2026f950d`\n- **FCStd:** artifact `art_7CmsQn-sD8cvSGvC`, the native FreeCAD file.\n\nFINAL_JOB_ID: job_egBqIEIedLmB0hUagIqONw",
+   "finalText": " mm long along Z.\n- One 4.2 mm through hole on the centre axis. 4.2 mm is the standard tap drill for M5\u00d70.8 coarse thread.\n- One valid solid. Volume is 1454.96 mm\u00b3, which matches the hand calculation.\n\n**Artifacts:**\n- **STEP:** `model.step` (11.7 KB)\n  - Resource: `freecad-artifact://job_egBqIEIedLmB0hUagIqONw/art_vAkTLhxFEdWdtpK1`\n  - File: `<repo>/data/jobs/job_egBqIEIedLmB0hUagIqONw/artifacts/model.step`\n  - sha256 `bb1350d0\u2026f950d`\n- **FCStd:** artifact `art_7CmsQn-sD8cvSGvC`, the native FreeCAD file.\n\nFINAL_JOB_ID: job_egBqIEIedLmB0hUagIqONw",
    "grade": {
     "pass": true,
     "checks": {

@@ -14,17 +14,18 @@ const flag = (name: string) => {
 };
 const budgetUsd = Number(flag("--budget") ?? 1);
 const maxIterations = Number(flag("--iterations") ?? 4);
+const toolMode = flag("--tool-mode") === "classic" ? "classic" : "codemode";
 const noVisual = args.includes("--no-visual") ? (args.splice(args.indexOf("--no-visual"), 1), true) : false;
 const request = args.join(" ").trim();
 if (!request) {
-  process.stderr.write('usage: freecad-design "<part request>" [--budget USD] [--iterations N] [--no-visual]\n');
+  process.stderr.write('usage: freecad-design "<part request>" [--budget USD] [--iterations N] [--no-visual] [--tool-mode codemode|classic]\n');
   process.exit(64);
 }
 process.env.FREECAD_MCP_LOG_STDERR ??= "0";
 const gw = new CadGateway();
 const designs = new DesignManager(gw);
 try {
-  const rec = await designs.start(gw.cfg.principal, request, { budgetUsd, maxIterations, visualCheck: !noVisual });
+  const rec = await designs.start(gw.cfg.principal, request, { budgetUsd, maxIterations, visualCheck: !noVisual, toolMode });
   let shown = 0;
   while (rec.status === "running") {
     await designs.wait(gw.cfg.principal, rec.id, 1000);
