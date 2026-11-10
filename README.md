@@ -2,7 +2,7 @@
 
 # robust-freecad-mcp
 
-**Describe a part. Get a FreeCAD model that is *measured*, *tested* and *seen*.**
+**Production-grade FreeCAD automation: precision-verified by measurement, token-efficient via Code Mode.**
 
 An MCP server where AI agents build FreeCAD parts in **⚡ Code Mode**, which makes it ***efficient***. One short
 JavaScript program drives a typed `cad` API, so a whole build → validate → repair loop is a single call at
