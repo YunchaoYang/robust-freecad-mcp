@@ -347,6 +347,27 @@ The 3 failures hit the 15-min limit. Two came from an `import App` shadowing bug
   <img src="docs/images/eval-design-light.svg" alt="Claude Code via MCP vs local Qwen via embedded agent">
 </picture>
 
+**Ablation: Code Mode vs classic tool calling.** We kept the model (local Qwen3.8-27B), tasks, grader, locked spec and budgets the same
+and swapped only the build-stage tool surface. The classic arm uses search/example/submit/status tools with full scripts and full results.
+
+| | Code Mode | Classic | Classic / Code Mode |
+|---|---|---|---|
+| Hidden-spec passes | **8 / 8** | 6 / 8 | — |
+| Input tokens (8 tasks) | **150k** | 199k | 1.33× (1.68× on the 6 tasks both passed) |
+| Build-stage model calls (6 tasks both passed) | **19** | 30 | 1.58× |
+| Median wall time per task | 595 s | 522 s | 0.88× (within noise) |
+
+Code Mode buys **reliability and fewer input tokens** through script reuse via `exampleId`/`fromJob` and compact results.
+End-to-end wall time is a wash on a local GPU: generation dominates and output tokens were equal, while prefill is cheap.
+On a per-input-token cloud model, the 25–40 % saving goes straight to cost.
+*Caveats: 1 run per task, both arms ran concurrently on one vLLM, and the 8-vs-6 gap is directional, not significant.*
+Data: [`docs/data/eval_ablation_*.json`](docs/data/).
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/eval-ablation-dark.svg">
+  <img src="docs/images/eval-ablation-light.svg" alt="Code Mode vs classic tool calling ablation on local Qwen">
+</picture>
+
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/images/tool-tokens-dark.svg">
   <img src="docs/images/tool-tokens-light.svg" alt="Upfront tool-definition tokens across FreeCAD MCP servers">
