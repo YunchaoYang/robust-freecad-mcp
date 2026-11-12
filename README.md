@@ -376,6 +376,8 @@ Data: [`docs/data/eval_ablation_*.json`](docs/data/).
 <sub>Upfront tool-definition cost: ours was measured live via `tools/list`. Other servers were reconstructed statically from source, never executed.
 Tokens ≈ bytes / 4. Data: [`docs/data/`](docs/data/).</sub>
 
+> 📝 **Write-up:** [Don't Trust the Model, Measure the Part](docs/blog/lessons-from-robust-freecad-mcp.md): lessons learned and a blueprint for other CAD/CAE tools.
+
 ## Tests
 
 ```bash
